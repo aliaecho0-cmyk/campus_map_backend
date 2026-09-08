@@ -1,0 +1,208 @@
+/* pages/clubs.css — 社团列表（移植自 clubs.wxss + club-card.wxss） */
+.clubs-page {
+  min-height: 100vh;
+  padding-bottom: 50px;
+}
+.search-bar {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-color-white);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.search-field {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: var(--fill-soft);
+  border-radius: 10px;
+  height: 34px;
+  padding: 0 10px 0 16px;
+}
+.search-input {
+  flex: 1;
+  height: 100%;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  padding-right: 4px;
+}
+.search-input::placeholder {
+  color: var(--text-color-secondary);
+}
+.search-clear {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  line-height: 21px;
+  text-align: center;
+  border-radius: 50%;
+  background: #d3d1c7;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}
+.search-btn {
+  margin-left: 10px;
+  color: var(--primary-color);
+  font-size: 13px;
+  cursor: pointer;
+}
+.cat-bar {
+  white-space: nowrap;
+  overflow-x: auto;
+  background: var(--bg-color-white);
+  padding: 0 12px 8px;
+  position: sticky;
+  top: 50px;
+  z-index: 10;
+}
+.cat-item {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 4px 14px;
+  border-radius: 6px;
+  background: var(--fill-soft);
+  color: var(--text-color-regular);
+  font-size: 13px;
+  cursor: pointer;
+}
+.cat-item.active {
+  background: var(--primary-color);
+  color: #fff;
+}
+.count {
+  padding: 8px 16px 4px;
+  font-size: 11px;
+  color: var(--text-color-secondary);
+}
+.list {
+  padding-top: 4px;
+}
+.club-card {
+  display: flex;
+  align-items: flex-start;
+  background: var(--bg-color-white);
+  border-radius: 10px;
+  padding: 12px;
+  margin: 0 12px 10px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+}
+.logo {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--primary-light);
+  color: var(--primary-color);
+  font-size: 20px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}
+.logo.cat-academic {
+  background: var(--cat-academic);
+  color: #fff;
+}
+.logo.cat-art {
+  background: var(--cat-art);
+  color: #fff;
+}
+.logo.cat-sport {
+  background: var(--cat-sport);
+  color: #fff;
+}
+.logo.cat-tech {
+  background: var(--cat-tech);
+  color: #fff;
+}
+.logo.cat-volunteer {
+  background: var(--cat-volunteer);
+  color: #fff;
+}
+.main {
+  flex: 1;
+  min-width: 0;
+}
+.row1 {
+  display: flex;
+  align-items: center;
+}
+.name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-color-primary);
+  margin-right: 6px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.name .hl {
+  color: var(--primary-color);
+  font-weight: 700;
+  background: rgba(106, 89, 170, 0.12);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+.tag {
+  font-size: 10px;
+  color: var(--primary-dark);
+  background: var(--primary-light);
+  padding: 1px 7px;
+  border-radius: 6px;
+}
+.tag.cat-academic {
+  background: var(--cat-academic);
+  color: #fff;
+}
+.tag.cat-art {
+  background: var(--cat-art);
+  color: #fff;
+}
+.tag.cat-sport {
+  background: var(--cat-sport);
+  color: #fff;
+}
+.tag.cat-tech {
+  background: var(--cat-tech);
+  color: #fff;
+}
+.tag.cat-volunteer {
+  background: var(--cat-volunteer);
+  color: #fff;
+}
+.row2 {
+  font-size: 12px;
+  color: var(--text-color-regular);
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.row3 {
+  display: flex;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-color-secondary);
+}
+.booth {
+  color: var(--accent-color);
+  margin-right: 8px;
+}
+.status-line {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+}
+.map-link {
+  color: var(--primary-color);
+  font-size: 11px;
+  margin-left: auto;
+}

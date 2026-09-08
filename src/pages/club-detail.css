@@ -1,0 +1,149 @@
+/* pages/club-detail.css — 社团详情（移植自 club-detail.wxss） */
+.club-detail-page {
+  min-height: 100vh;
+  padding: 12px;
+  padding-bottom: 30px;
+}
+.hero {
+  display: flex;
+  align-items: center;
+  background: var(--bg-color-white);
+  border-radius: 10px;
+  padding: 16px 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+}
+.logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  background: var(--primary-light);
+  color: var(--primary-color);
+  font-size: 28px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+.logo.cat-academic {
+  background: #7a68a8;
+  color: #fff;
+}
+.logo.cat-tech {
+  background: #6e6ad8;
+  color: #fff;
+}
+.logo.cat-art {
+  background: #63549f;
+  color: #fff;
+}
+.logo.cat-sport {
+  background: #6b75c9;
+  color: #fff;
+}
+.logo.cat-volunteer {
+  background: #784ea2;
+  color: #fff;
+}
+.hero-main {
+  flex: 1;
+  min-width: 0;
+}
+.name {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-color-primary);
+}
+.tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  gap: 6px;
+}
+.tag {
+  font-size: 10px;
+  color: var(--primary-dark);
+  background: var(--primary-light);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.tag.cat-academic {
+  background: #7a68a8;
+  color: #fff;
+}
+.tag.cat-tech {
+  background: #6e6ad8;
+  color: #fff;
+}
+.tag.cat-art {
+  background: #63549f;
+  color: #fff;
+}
+.tag.cat-sport {
+  background: #6b75c9;
+  color: #fff;
+}
+.tag.cat-volunteer {
+  background: #784ea2;
+  color: #fff;
+}
+.tag-blue {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+.status-line {
+  display: flex;
+  align-items: center;
+}
+.status-text {
+  font-size: 11px;
+  color: var(--text-color-regular);
+}
+.fav {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--text-color-regular);
+  border: 1px solid var(--border-color-light);
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.fav.on {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  background: var(--primary-light);
+}
+.section-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color-primary);
+  margin-bottom: 8px;
+}
+.intro-text {
+  font-size: 13px;
+  color: var(--text-color-regular);
+  line-height: 1.8;
+}
+.rules-block {
+  margin-top: 12px;
+}
+.rules-title {
+  margin-bottom: 4px;
+}
+.booth-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.booth-id {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--primary-color);
+}
+.map-btn {
+  font-size: 13px;
+  line-height: 2.2;
+}

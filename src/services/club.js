@@ -1,0 +1,25 @@
+/** services/club.js — 社团业务（只读） */
+import * as mock from '../data/mock.js';
+
+const CATEGORIES = ['全部', '学术', '科技', '艺术', '体育', '志愿'];
+
+async function getClubs({ category = '', keyword = '', page = 1, pageSize = 20 } = {}) {
+  const boothMap = {};
+  mock.booths.forEach((b) => (boothMap[b.clubId] = b));
+  let list = mock.clubs.map((c) => {
+    const b = boothMap[c.clubId];
+    return { ...c, status: b ? b.status : '', lat: b ? b.lat : 0, lng: b ? b.lng : 0 };
+  });
+  if (category) list = list.filter((c) => c.category === category);
+  if (keyword) list = list.filter((c) => c.name.includes(keyword) || (c.slogan || '').includes(keyword));
+  const start = (page - 1) * pageSize;
+  return { list: list.slice(start, start + pageSize), total: list.length };
+}
+
+async function getClubDetail(clubId) {
+  const club = mock.clubs.find((c) => c.id === clubId);
+  const booth = mock.booths.find((b) => b.clubId === clubId);
+  return club ? { ...club, status: booth ? booth.status : '', booth: booth || null } : null;
+}
+
+export { getClubs, getClubDetail, CATEGORIES };
