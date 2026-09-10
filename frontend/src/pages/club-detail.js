@@ -5,6 +5,7 @@ import './club-detail.css';
 import { wx } from '../adapter/wx.js';
 import { state } from '../state.js';
 import * as clubSvc from '../services/club.js';
+import { recordViewAfterDelay } from '../services/boothView.js';
 
 const CAT_KEY_MAP = { 学术: 'academic', 艺术: 'art', 体育: 'sport', 科技: 'tech', 志愿: 'volunteer' };
 const STATUS_TEXT = { open: '营业中', break: '休息中', closed: '已收摊' };
@@ -28,6 +29,10 @@ class ClubDetailPage {
     if (!club) {
       this.el.innerHTML = '<div class="page club-detail-page"><div class="empty">社团不存在</div></div>';
       return;
+    }
+    const boothId = club.boothId || (club.booth && club.booth.id) || '';
+    if (boothId) {
+      this._cancelView = recordViewAfterDelay(boothId);
     }
     const catKey = CAT_KEY_MAP[club.category] || 'default';
     const booth = club.booth || {};
@@ -76,8 +81,19 @@ class ClubDetailPage {
   }
 
   destroy() {
+    if (this._cancelView) {
+      this._cancelView();
+      this._cancelView = null;
+    }
     this.el.innerHTML = '';
   }
 }
 
-export default { title: '社团详情', mount: (c, q) => new ClubDetailPage().mount(c, q) };
+export default {
+  title: '社团详情',
+  mount(c, q) {
+    const page = new ClubDetailPage();
+    page.mount(c, q);
+    return page;
+  },
+};

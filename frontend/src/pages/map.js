@@ -11,6 +11,7 @@ import * as canvasMap from '../utils/canvas-map.js';
 import { buildMatch } from '../utils/search.js';
 import { CustomMap } from '../components/custom-map.js';
 import * as tut from './map/tutorial-steps.js';
+import { recordViewAfterDelay } from '../services/boothView.js';
 
 const CAT_KEY_MAP = {
   学术: 'academic',
@@ -225,6 +226,7 @@ class MapPage {
     if (!booth) return;
     this.map.setHighlightedId(d.id);
     this.showCallout(booth, d.x, d.y);
+    this._startViewTimer(d.id);
   }
 
   showCallout(booth, x, y) {
@@ -265,6 +267,7 @@ class MapPage {
   }
 
   onCalloutClose() {
+    this._cancelViewTimer();
     this.callout.style.display = 'none';
     this.map.setHighlightedId('');
   }
@@ -274,9 +277,11 @@ class MapPage {
       this.callout.style.display = 'none';
       this.map.setHighlightedId('');
     }
+    this._cancelViewTimer();
   }
 
   onCalloutDetail() {
+    this._cancelViewTimer();
     this.callout.style.display = 'none';
     if (this._currentBooth) {
       wx.navigateTo({ url: `#/club-detail?clubId=${this._currentBooth.clubId}` });
@@ -383,6 +388,19 @@ class MapPage {
       if (rect) this.showCallout(b, rect.x, rect.y);
     });
     setTimeout(() => this.map.setHighlightedId(''), 3000);
+  }
+
+  /* ---------- 浏览埋点计时 ---------- */
+  _startViewTimer(boothId) {
+    this._cancelViewTimer();
+    this._viewCancel = recordViewAfterDelay(boothId);
+  }
+
+  _cancelViewTimer() {
+    if (this._viewCancel) {
+      this._viewCancel();
+      this._viewCancel = null;
+    }
   }
 
   /* ---------- 新手指引 ---------- */
@@ -568,6 +586,7 @@ class MapPage {
   }
 
   destroy() {
+    this._cancelViewTimer();
     clearTimeout(this._mapReadyTimer);
     clearTimeout(this._plazaHlTimer);
     clearTimeout(this._typeTimer);
