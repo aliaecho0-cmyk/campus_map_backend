@@ -54,7 +54,7 @@ class StaffRedeemPage {
       this.timer = setTimeout(() => {
         if (!this.destroyed) location.hash = '#/map';
       }, 1200);
-      return;
+      return this;
     }
 
     container.innerHTML = `
@@ -66,6 +66,7 @@ class StaffRedeemPage {
 
     this.result = container.querySelector('.redeem-result');
     this.startScanner();
+    return this;
   }
 
   async startScanner() {

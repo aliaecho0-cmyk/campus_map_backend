@@ -27,7 +27,7 @@ class StaffPage {
 
     if (!this.code) {
       container.innerHTML = '<div class="page staff-page"><div class="staff-msg">链接无效，请联系管理员</div></div>';
-      return;
+      return this;
     }
 
     container.innerHTML = `
@@ -48,6 +48,7 @@ class StaffPage {
     });
     this.submit.addEventListener('click', () => this.doLogin());
     this.input.focus();
+    return this;
   }
 
   async doLogin() {

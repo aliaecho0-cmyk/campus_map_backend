@@ -63,6 +63,7 @@ class RewardPage {
   }
 
   updateCountdown() {
+    if (this.destroyed) return;
     const box = this.el.querySelector('.countdown-box');
     if (!box) return;
     box.textContent = formatCountdown(this.eventEndAt) || '活动时间待定';
@@ -91,7 +92,9 @@ class RewardPage {
   }
 
   renderBadge(err) {
+    if (this.destroyed) return;
     const body = this.el.querySelector('.badge-body');
+    if (!body) return;
     const b = this.badge;
     if (err || !b) {
       const msg = err ? (err && err.message) || '网络异常，请稍后重试' : '加载中…';
@@ -111,7 +114,9 @@ class RewardPage {
   }
 
   renderClaim(err) {
+    if (this.destroyed) return;
     const body = this.el.querySelector('.claim-body');
+    if (!body) return;
     if (err) {
       body.innerHTML = `<div class="reward-empty">${escapeHtml((err && err.message) || '网络异常，请稍后重试')}</div>`;
       return;

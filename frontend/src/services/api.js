@@ -11,8 +11,13 @@
  * 对应后端契约：backend/docs/API.md（v1.0）
  */
 
-/** 后端基础地址（后续可改为环境变量注入） */
-export const BASE_URL = 'http://localhost:3000';
+/** 后端基础地址。
+ * - 开发（未设置 VITE_API_BASE）：默认打本地 3000。
+ * - 生产：后端经反代暴露在与页面同源的 /api 下，且各请求路径本身已带 /api，
+ *   故构建时用 `VITE_API_BASE=`（空串）让 BASE_URL 为空、走同源 /api，避免 /api 前缀重复。
+ */
+const __configuredBase = import.meta.env?.VITE_API_BASE;
+export const BASE_URL = __configuredBase === undefined || __configuredBase === null ? 'http://localhost:3000' : String(__configuredBase);
 
 /** localStorage 中 JWT 的存储 key */
 const TOKEN_KEY = 'auth_token';

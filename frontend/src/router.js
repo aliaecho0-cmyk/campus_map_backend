@@ -93,7 +93,7 @@ function render() {
       if (revealed) return;
       revealed = true;
       bar.remove();
-      if (current === page) current.onPageVisible?.();
+      if (current && current === page) current.onPageVisible?.();
     };
     bar.addEventListener('animationend', revealPage);
     setTimeout(revealPage, 450);
@@ -112,7 +112,7 @@ function render() {
 
   page = mod.mount(pageEl, query);
   current = page;
-  if (!revealPage) page.onPageVisible?.();
+  if (!revealPage && page) page.onPageVisible?.();
   window.scrollTo(0, 0);
 }
 
