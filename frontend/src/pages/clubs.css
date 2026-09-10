@@ -1,0 +1,260 @@
+/* pages/clubs.css — 社团列表（千禧数码像素风）
+ * 搜索相关选择器加 .clubs-page 前缀，避免与 map.css 同名类级联冲突。 */
+.clubs-page {
+  min-height: 100vh;
+  padding-bottom: calc(50px + var(--safe-b));
+}
+.clubs-page .search-bar {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--bg-color-white);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: var(--px-border-w) solid var(--px-border);
+}
+.clubs-page .search-field {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: var(--fill-soft);
+  border: var(--px-border-w) solid var(--px-line);
+  border-radius: 0;
+  height: 34px;
+  padding: 0 10px 0 12px;
+}
+.clubs-page .search-input {
+  flex: 1;
+  height: 100%;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  padding-right: 4px;
+}
+.clubs-page .search-input::placeholder {
+  color: var(--text-color-secondary);
+}
+.clubs-page .search-clear {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  line-height: 23px;
+  text-align: center;
+  border-radius: 0;
+  background: var(--pal-lilac);
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  clip-path: var(--px-clip-tr);
+  filter: drop-shadow(2px 2px 0 var(--px-shadow));
+  transition: transform var(--dur-fast) var(--ease-step), filter var(--dur-fast) var(--ease-step);
+}
+.clubs-page .search-clear:active {
+  transform: translate(2px, 2px);
+  filter: drop-shadow(0 0 0 transparent);
+}
+.clubs-page .search-btn {
+  margin-left: 10px;
+  color: var(--pal-deep);
+  font-size: 12px;
+  font-family: var(--font-px);
+  letter-spacing: 1px;
+  cursor: pointer;
+  padding: 4px 2px;
+}
+.clubs-page .search-btn:active {
+  transform: translateY(2px);
+}
+.cat-bar {
+  white-space: nowrap;
+  overflow-x: auto;
+  background: var(--bg-color-white);
+  padding: 0 12px 10px;
+  position: sticky;
+  top: 54px;
+  z-index: 10;
+  border-bottom: var(--px-border-w) solid var(--px-border);
+}
+.cat-item {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 0 14px;
+  min-height: 32px;
+  line-height: 30px;
+  border: var(--px-border-w) solid var(--px-border);
+  border-radius: 0;
+  background: var(--fill-soft);
+  color: var(--text-color-regular);
+  font-size: 12px;
+  font-family: var(--font-px);
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-step), background var(--dur-fast) var(--ease-step);
+}
+.cat-item:active {
+  transform: translate(2px, 2px);
+  background: var(--px-line);
+}
+@media (hover: hover) {
+  .cat-item:hover {
+    background: var(--px-line);
+  }
+}
+.cat-item.active {
+  background: var(--pal-deep);
+  color: #fff;
+  animation: px-bounce 0.28s var(--ease-pop);
+}
+.count {
+  padding: 8px 16px 6px;
+  font-size: 12px;
+  font-family: var(--font-px);
+  letter-spacing: 1px;
+  color: var(--text-color-secondary);
+}
+.list {
+  padding-top: 4px;
+}
+.club-card {
+  display: flex;
+  align-items: flex-start;
+  background: var(--bg-color-white);
+  border: var(--px-border-w) solid var(--px-border);
+  border-radius: var(--border-radius-lg);
+  padding: 12px;
+  margin: 0 12px 10px;
+  box-shadow: 3px 3px 0 var(--px-shadow);
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-step), box-shadow var(--dur-fast) var(--ease-step);
+}
+.club-card:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 var(--px-shadow);
+}
+@media (hover: hover) {
+  .club-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 var(--px-shadow);
+  }
+}
+.logo {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 0;
+  border: var(--px-border-w) solid var(--px-border);
+  box-sizing: border-box;
+  background: var(--primary-light);
+  color: var(--primary-color);
+  font-size: 20px;
+  font-family: var(--font-px);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}
+.logo.cat-academic {
+  background: var(--cat-academic);
+  color: #fff;
+}
+.logo.cat-art {
+  background: var(--cat-art);
+  color: #fff;
+}
+.logo.cat-sport {
+  background: var(--cat-sport);
+  color: var(--px-sport-ink);
+}
+.logo.cat-tech {
+  background: var(--cat-tech);
+  color: #fff;
+}
+.logo.cat-volunteer {
+  background: var(--cat-volunteer);
+  color: #fff;
+}
+.logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 任意比例填满方块，裁剪居中 */
+  display: block;
+}
+.logo:has(img) {
+  overflow: hidden;
+  background: #fff; /* 有图时分类底色改为白底，透明底 PNG 垫白 */
+}
+.main {
+  flex: 1;
+  min-width: 0;
+}
+.row1 {
+  display: flex;
+  align-items: center;
+}
+.name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-color-primary);
+  margin-right: 6px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.name .hl {
+  color: var(--pal-deep);
+  font-weight: 700;
+  background: rgba(146, 92, 209, 0.16);
+  border-radius: 0;
+  padding: 0 1px;
+}
+.tag.cat-academic {
+  background: var(--cat-academic);
+  color: #fff;
+}
+.tag.cat-art {
+  background: var(--cat-art);
+  color: #fff;
+}
+.tag.cat-sport {
+  background: var(--cat-sport);
+  color: var(--px-sport-ink);
+}
+.tag.cat-tech {
+  background: var(--cat-tech);
+  color: #fff;
+}
+.tag.cat-volunteer {
+  background: var(--cat-volunteer);
+  color: #fff;
+}
+.row2 {
+  font-size: 12px;
+  color: var(--text-color-regular);
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.row3 {
+  display: flex;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-color-secondary);
+}
+.booth {
+  color: var(--accent-color);
+  margin-right: 8px;
+}
+.status-line {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+}
+.map-link {
+  color: var(--primary-color);
+  font-size: 11px;
+  margin-left: auto;
+}

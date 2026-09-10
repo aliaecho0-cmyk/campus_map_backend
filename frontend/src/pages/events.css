@@ -1,0 +1,111 @@
+/* pages/events.css — 活动列表（千禧数码像素风） */
+.events-page {
+  min-height: 100vh;
+  padding-bottom: calc(50px + var(--safe-b));
+}
+.filter-bar {
+  display: flex;
+  background: var(--bg-color-white);
+  padding: 10px 12px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: var(--px-border-w) solid var(--px-border);
+}
+.filter-item {
+  margin-right: 8px;
+  padding: 0 14px;
+  min-height: 32px;
+  line-height: 30px;
+  border: var(--px-border-w) solid var(--px-border);
+  border-radius: 0;
+  background: var(--fill-soft);
+  color: var(--text-color-regular);
+  font-size: 12px;
+  font-family: var(--font-px);
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-step), background var(--dur-fast) var(--ease-step);
+}
+.filter-item:active {
+  transform: translate(2px, 2px);
+  background: var(--px-line);
+}
+@media (hover: hover) {
+  .filter-item:hover {
+    background: var(--px-line);
+  }
+}
+.filter-item.active {
+  background: var(--pal-deep);
+  color: #fff;
+  animation: px-bounce 0.28s var(--ease-pop);
+}
+.timeline {
+  padding: 12px;
+}
+.event-card {
+  display: flex;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.time-col {
+  width: 70px;
+  flex-shrink: 0;
+  text-align: center;
+  padding-top: 4px;
+}
+.time {
+  font-size: 16px;
+  font-weight: 500;
+  font-family: var(--font-px);
+  color: var(--text-color-primary);
+}
+.type-tag {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-family: var(--font-px);
+  padding: 1px 7px;
+  border-radius: 0;
+  color: #fff;
+}
+.type-stage_show {
+  background: var(--pal-deep);
+}
+.type-npc {
+  background: var(--px-deepest);
+}
+.type-reward {
+  background: var(--px-hot);
+}
+.content {
+  flex: 1;
+  min-width: 0;
+  border-left: var(--px-border-w) solid var(--px-line);
+  padding-left: 12px;
+}
+.title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-color-primary);
+}
+.meta {
+  font-size: 11px;
+  color: var(--text-color-secondary);
+  margin-top: 3px;
+}
+.desc {
+  font-size: 12px;
+  color: var(--text-color-regular);
+  margin-top: 5px;
+  line-height: 1.7;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.action {
+  margin-top: 6px;
+  color: var(--accent-color);
+  font-size: 12px;
+}

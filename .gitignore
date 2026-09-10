@@ -1,3 +1,18 @@
 node_modules/
 dist/
 *.log
+
+# 陈旧归档
+web.zip
+
+# 后端 SQLite 数据库文件（run-migration.js 生成）
+backend/data/*.db*
+backend/database.db
+backend/database.db-*
+
+# 后端本地环境变量（含 JWT 密钥，严禁入库）
+backend/.env
+
+# 后端工具本地目录；docs/.claude/ 属于项目文档，纳入版本控制
+backend/.claude/
+!backend/docs/.claude/

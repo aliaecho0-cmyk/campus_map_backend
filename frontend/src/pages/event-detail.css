@@ -1,0 +1,82 @@
+/* pages/event-detail.css — 活动详情（千禧数码像素风） */
+.event-detail-page {
+  min-height: 100vh;
+  padding: 12px;
+  padding-bottom: 30px;
+  animation: px-slide-in 0.3s steps(5) both;
+}
+.head {
+  border: var(--px-border-w) solid var(--px-border);
+  border-radius: 0;
+  padding: 20px 16px;
+  margin-bottom: 10px;
+  color: var(--px-ink);
+  background: #e5b5f1; /* 舞台：粉紫 tint */
+  box-shadow: 3px 3px 0 var(--px-shadow);
+}
+.head.npc {
+  background: #ead2f5; /* 隐藏任务：更浅的粉紫 tint */
+}
+.head.reward {
+  background: #d9b8ec; /* 兑奖点：丁香紫 tint */
+}
+.type {
+  display: inline-block;
+  font-size: 12px;
+  font-family: var(--font-px);
+  color: #fff;
+  background: var(--pal-deep);
+  padding: 2px 9px;
+  border-radius: 0;
+}
+.head.npc .type {
+  background: var(--px-deepest);
+}
+.head.reward .type {
+  background: var(--px-hot);
+}
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  font-family: var(--font-px);
+  letter-spacing: 1px;
+  margin-top: 8px;
+}
+.time {
+  font-size: 12px;
+  color: var(--text-color-regular);
+  margin-top: 5px;
+}
+.row {
+  display: flex;
+  padding: 6px 0;
+  font-size: 13px;
+}
+.label {
+  color: var(--text-color-secondary);
+  width: 60px;
+  flex-shrink: 0;
+}
+.value {
+  color: var(--text-color-primary);
+  flex: 1;
+}
+.section-title {
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-px);
+  letter-spacing: 1px;
+  color: var(--text-color-primary);
+  margin-bottom: 8px;
+}
+.desc {
+  font-size: 13px;
+  color: var(--text-color-regular);
+  line-height: 1.8;
+}
+.go-btn {
+  margin-top: 20px;
+  width: 100%;
+  font-size: 14px;
+  line-height: 2.6;
+}

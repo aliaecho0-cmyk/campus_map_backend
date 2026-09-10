@@ -1,0 +1,139 @@
+/* ===== motion.css —— 千禧数码像素动效系统 =====
+ * 全部动画只用 transform/opacity；steps() 离散帧营造像素感；
+ * prefers-reduced-motion 全局降级。 */
+
+@keyframes px-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes px-blink-slow {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.3; }
+}
+
+/* 像素加载块：8×8 方块走 3×3 格 */
+@keyframes px-walk {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(8px, 0); }
+  50% { transform: translate(8px, 8px); }
+  75% { transform: translate(0, 8px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* 气泡/弹窗入场 */
+@keyframes px-pop {
+  0% { transform: scale(0.86); }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* 列表卡片级联入场 */
+@keyframes px-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* chip 选中弹跳 */
+@keyframes px-bounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+/* 详情页滑入 */
+@keyframes px-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 遮罩淡入 */
+@keyframes px-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 公告跑马灯（轨道宽度为内容 ×2，-50% 无缝循环） */
+@keyframes px-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* 页面切换像素擦除条 */
+@keyframes px-wipe {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+/* ===== 工具类 ===== */
+
+/* 级联入场容器：子元素按 --i 依次延迟 */
+.stagger > * {
+  animation: px-rise 0.4s steps(6) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+/* 像素加载块（空态/加载中复用） */
+.px-spin {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 6px;
+  background: var(--pal-deep);
+  animation: px-walk 0.6s steps(1) infinite;
+  vertical-align: middle;
+}
+
+/* 页面切换擦除条：深紫条 + 粉紫前缘，8 步离散揭示新页面 */
+.px-wipe {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: var(--z-wipe);
+  background: #925cd1;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.07) 0 8px,
+    transparent 8px 16px
+  );
+  animation: px-wipe 0.35s steps(8) forwards;
+  pointer-events: none;
+}
+.px-wipe::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #e5b5f1;
+}
+
+/* ===== 减少动态：全局静止 ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .marquee .ann-track {
+    animation: none !important;
+  }
+}
