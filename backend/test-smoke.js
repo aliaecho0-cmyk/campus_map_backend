@@ -37,7 +37,12 @@ const AUX2 = 'dev_1770000002_smokeTSB'; // 并发核销中的学生 B（其码�
 const EXPP = 'dev_1770000003_smokeTSC'; // 活动过期时用于尝试取码的学生
 const ALL_IDS = [MAIN, AUX1, AUX2, EXPP];
 
-const BOOTHS = ['booth-001', 'booth-002', 'booth-003', 'booth-004', 'booth-005'];
+const BOOTHS = [
+  'booth-001', 'booth-002', 'booth-003', 'booth-004', 'booth-005',
+  'booth-006', 'booth-007', 'booth-008', 'booth-009', 'booth-010',
+  'booth-011', 'booth-012', 'booth-013', 'booth-014', 'booth-015',
+  'booth-016', 'booth-017', 'booth-018', 'booth-019', 'booth-020',
+];
 
 // ---- 结果统计 ---------------------------------------------------------------
 const results = []; // { num, title, pass, detail }
@@ -98,7 +103,7 @@ function placeholders(arr) {
   return arr.map(() => '?').join(', ');
 }
 
-// 学生登录并浏览 5 个不同摊位（返回 token），用于为辅账/过期测试准备已达解锁状态的学生。
+// 学生登录并浏览 20 个不同摊位（返回 token），用于为辅账/过期测试准备已达解锁状态的学生。
 async function loginAndBrowse(deviceId) {
   const login = await api('/api/auth/student', { method: 'POST', body: { deviceId } });
   ok(login.status === 200, `登录失败 ${deviceId} status=${login.status}`);
@@ -166,7 +171,7 @@ try {
   process.exit(1);
 }
 
-// 其余活动而过期前需达解锁状态的测试学生：提前登录 + 浏览 5 摊
+// 其余活动而过期前需达解锁状态的测试学生：提前登录 + 浏览 20 摊
 const setupTokens = {};
 for (const id of [AUX1, AUX2, EXPP]) {
   setupTokens[id] = await loginAndBrowse(id);
@@ -190,8 +195,8 @@ await step(1, '学生登录 main', async () => {
   return { detail: `deviceId=${MAIN} role=${r.data.user?.role} eventEndAt=${r.data.eventEndAt ?? ''}` };
 });
 
-// —— 第 2 步：依次浏览 5 个不同摊位 ——
-await step(2, '依次浏览 5 个摊位并解锁', async () => {
+// —— 第 2 步：依次浏览 20 个不同摊位 ——
+await step(2, '依次浏览 20 个摊位并解锁', async () => {
   const seen = [];
   for (let i = 0; i < BOOTHS.length; i++) {
     const v = await api(`/api/events/${EVENT_ID}/booths/${BOOTHS[i]}/view`, {
@@ -216,7 +221,7 @@ await step(3, '奖励状态已解锁 knowitall', async () => {
   ok(r.status === 200, `status=${r.status} code=${r.code}`);
   ok(r.data.badge?.code === 'knowitall', `badge.code=${r.data.badge?.code}`);
   ok(r.data.badge?.unlocked === true, `unlocked=${r.data.badge?.unlocked}`);
-  ok(r.data.badge?.uniqueBoothCount === 5, `uniqueBoothCount=${r.data.badge?.uniqueBoothCount}`);
+  ok(r.data.badge?.uniqueBoothCount === BOOTHS.length, `uniqueBoothCount=${r.data.badge?.uniqueBoothCount}`);
   return {
     detail: `badge=${r.data.badge?.name} unlocked=${r.data.badge?.unlocked} ` +
       `unique=${r.data.badge?.uniqueBoothCount} claimStatus=${r.data.reward?.claimStatus ?? '-'}`,

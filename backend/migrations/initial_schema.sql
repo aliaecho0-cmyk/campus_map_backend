@@ -96,4 +96,4 @@ VALUES ('online_map_try_2026', 'online_map_try 2026', 'active', 1789833599);
 
 -- 插入 knowitall 徽章定义
 INSERT INTO badges (event_id, code, name, description, required_unique_booths)
-VALUES (1, 'knowitall', '百事通', '浏览5个不同摊位即可解锁', 5);
+VALUES (1, 'knowitall', '百事通', '浏览20个不同摊位即可解锁', 20);
