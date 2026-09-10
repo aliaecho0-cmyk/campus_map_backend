@@ -5,7 +5,7 @@ import './club-detail.css';
 import { wx } from '../adapter/wx.js';
 import { state } from '../state.js';
 import * as clubSvc from '../services/club.js';
-import { recordViewAfterDelay } from '../services/boothView.js';
+import { startViewSession } from '../services/boothView.js';
 
 const CAT_KEY_MAP = { 学术: 'academic', 艺术: 'art', 体育: 'sport', 科技: 'tech', 志愿: 'volunteer' };
 const STATUS_TEXT = { open: '营业中', break: '休息中', closed: '已收摊' };
@@ -20,20 +20,21 @@ class ClubDetailPage {
   mount(container, query) {
     this.el = container;
     this.clubId = query.clubId;
+    this._destroyed = false;
+    this._pageVisible = false;
     container.innerHTML = '<div class="page club-detail-page"><div class="empty">加载中<span class="px-spin"></span></div></div>';
     this.load();
   }
 
   async load() {
     const club = await clubSvc.getClubDetail(this.clubId);
+    if (this._destroyed) return;
     if (!club) {
       this.el.innerHTML = '<div class="page club-detail-page"><div class="empty">社团不存在</div></div>';
       return;
     }
     const boothId = club.boothId || (club.booth && club.booth.id) || '';
-    if (boothId) {
-      this._cancelView = recordViewAfterDelay(boothId);
-    }
+    this._boothId = String(boothId);
     const catKey = CAT_KEY_MAP[club.category] || 'default';
     const booth = club.booth || {};
     const intro = booth.intro || club.intro || club.slogan || '暂无简介';
@@ -71,19 +72,36 @@ class ClubDetailPage {
         </div>` : ''}
       </div>`;
 
+    if (this._pageVisible && this._boothId) this._startViewSession();
+
     const mapBtn = this.el.querySelector('.map-btn');
     if (mapBtn) {
       mapBtn.addEventListener('click', () => {
-        state.highlightBoothId = club.boothId;
+        if (this._viewSession) {
+          this._viewSession.pause();
+          state.boothViewHandoff = { boothId: this._boothId, session: this._viewSession };
+        }
+        state.highlightBoothId = this._boothId;
         wx.switchTab({ url: '#/map' });
       });
     }
   }
 
+  onPageVisible() {
+    this._pageVisible = true;
+    if (this._boothId) this._startViewSession();
+  }
+
+  _startViewSession() {
+    if (this._destroyed || this._viewSession) return;
+    this._viewSession = startViewSession(this._boothId);
+    this._viewSession.resume();
+  }
+
   destroy() {
-    if (this._cancelView) {
-      this._cancelView();
-      this._cancelView = null;
+    this._destroyed = true;
+    if (this._viewSession && state.boothViewHandoff?.session !== this._viewSession) {
+      this._viewSession.cancel();
     }
     this.el.innerHTML = '';
   }

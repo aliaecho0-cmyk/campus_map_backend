@@ -58,14 +58,22 @@ function render() {
   }
   pageEl.innerHTML = '';
 
+  let page = null;
+  let revealPage = null;
   // 像素擦除过渡：mount 在遮条下方同步完成，随后遮条 8 步离散右移揭示新页面
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const bar = document.createElement('div');
     bar.className = 'px-wipe';
     document.body.appendChild(bar);
-    const done = () => bar.remove();
-    bar.addEventListener('animationend', done);
-    setTimeout(done, 450);
+    let revealed = false;
+    revealPage = () => {
+      if (revealed) return;
+      revealed = true;
+      bar.remove();
+      if (current === page) current.onPageVisible?.();
+    };
+    bar.addEventListener('animationend', revealPage);
+    setTimeout(revealPage, 450);
   }
 
   if (isTab) {
@@ -78,7 +86,9 @@ function render() {
     tabbarEl.style.display = 'none';
   }
 
-  current = mod.mount(pageEl, query);
+  page = mod.mount(pageEl, query);
+  current = page;
+  if (!revealPage) page.onPageVisible?.();
   window.scrollTo(0, 0);
 }
 

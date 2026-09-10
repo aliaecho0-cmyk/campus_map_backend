@@ -11,7 +11,7 @@ import * as canvasMap from '../utils/canvas-map.js';
 import { buildMatch } from '../utils/search.js';
 import { CustomMap } from '../components/custom-map.js';
 import * as tut from './map/tutorial-steps.js';
-import { recordViewAfterDelay } from '../services/boothView.js';
+import { startViewSession } from '../services/boothView.js';
 
 const CAT_KEY_MAP = {
   学术: 'academic',
@@ -96,6 +96,10 @@ class MapPage {
     container.querySelector('.cc-close').addEventListener('click', () => this.onCalloutClose());
     container.querySelector('.cc-btn.primary').addEventListener('click', () => this.onCalloutDetail());
 
+    this._pageVisible = false;
+    this._destroyed = false;
+    this._handoffReady = false;
+    this._handoffSession = null;
     // 教程运行时
     this._tutorialActive = false;
     this._exampleBoothId = tut.EXAMPLE_BOOTH_ID;
@@ -170,11 +174,38 @@ class MapPage {
       this.map.setBooths(list);
       this.highlightBoothId = state.highlightBoothId || '';
       state.highlightBoothId = '';
+      const handoff = state.boothViewHandoff;
+      const startViewBoothId = state.startBoothViewAfterMapFocus;
+      state.startBoothViewAfterMapFocus = '';
       if (this.highlightBoothId) {
-        const b = this.allBooths.find((x) => x.id === this.highlightBoothId);
-        if (b) this.focusBooth(b);
+        const b = this.allBooths.find((x) => String(x.id) === String(this.highlightBoothId));
+        if (handoff && (!b || String(b.id) !== String(handoff.boothId))) {
+          handoff.session.cancel();
+          state.boothViewHandoff = null;
+        }
+        if (b) {
+          if (handoff && String(b.id) === String(handoff.boothId)) {
+            this._handoffSession = handoff.session;
+            state.boothViewHandoff = null;
+            this.focusBooth(b, () => {
+              this._handoffReady = true;
+              this._resumeHandoffIfVisible();
+            });
+          } else if (String(b.id) === String(startViewBoothId)) {
+            this.focusBooth(b, () => this._startViewSession(b.id));
+          } else {
+            this.focusBooth(b);
+          }
+        }
+      } else if (handoff) {
+        handoff.session.cancel();
+        state.boothViewHandoff = null;
       }
     } catch (e) {
+      if (state.boothViewHandoff) {
+        state.boothViewHandoff.session.cancel();
+        state.boothViewHandoff = null;
+      }
       console.warn('refreshBooths', e);
     }
   }
@@ -226,7 +257,7 @@ class MapPage {
     if (!booth) return;
     this.map.setHighlightedId(d.id);
     this.showCallout(booth, d.x, d.y);
-    this._startViewTimer(d.id);
+    this._startViewSession(d.id);
   }
 
   showCallout(booth, x, y) {
@@ -267,7 +298,7 @@ class MapPage {
   }
 
   onCalloutClose() {
-    this._cancelViewTimer();
+    this._cancelViewSession();
     this.callout.style.display = 'none';
     this.map.setHighlightedId('');
   }
@@ -277,11 +308,11 @@ class MapPage {
       this.callout.style.display = 'none';
       this.map.setHighlightedId('');
     }
-    this._cancelViewTimer();
+    this._cancelViewSession();
   }
 
   onCalloutDetail() {
-    this._cancelViewTimer();
+    this._cancelViewSession();
     this.callout.style.display = 'none';
     if (this._currentBooth) {
       wx.navigateTo({ url: `#/club-detail?clubId=${this._currentBooth.clubId}` });
@@ -380,26 +411,49 @@ class MapPage {
     }
   }
 
-  focusBooth(b) {
+  focusBooth(b, onCalloutShown) {
     this.map.setHighlightedId(b.id);
     const c = this.map;
     c.focusMapPoint(b.mapX, b.mapY, 1.15).then(() => {
+      if (this._destroyed) return;
       const rect = c.getBoothLocalCenter(b.id);
-      if (rect) this.showCallout(b, rect.x, rect.y);
+      if (!rect) return;
+      this.showCallout(b, rect.x, rect.y);
+      if (onCalloutShown) onCalloutShown();
     });
     setTimeout(() => this.map.setHighlightedId(''), 3000);
   }
 
-  /* ---------- 浏览埋点计时 ---------- */
-  _startViewTimer(boothId) {
-    this._cancelViewTimer();
-    this._viewCancel = recordViewAfterDelay(boothId);
+  onPageVisible() {
+    this._pageVisible = true;
+    this._resumeHandoffIfVisible();
   }
 
-  _cancelViewTimer() {
-    if (this._viewCancel) {
-      this._viewCancel();
-      this._viewCancel = null;
+  _resumeHandoffIfVisible() {
+    if (this._handoffSession && this._handoffReady && this._pageVisible) {
+      this._handoffSession.resume();
+    }
+  }
+
+  /* ---------- 浏览埋点计时 ---------- */
+  _startViewSession(boothId) {
+    this._cancelViewSession();
+    if (state.boothViewHandoff) {
+      state.boothViewHandoff.session.cancel();
+      state.boothViewHandoff = null;
+    }
+    this._viewSession = startViewSession(boothId);
+    this._viewSession.resume();
+  }
+
+  _cancelViewSession() {
+    if (this._viewSession) {
+      this._viewSession.cancel();
+      this._viewSession = null;
+    }
+    if (this._handoffSession) {
+      this._handoffSession.cancel();
+      this._handoffSession = null;
     }
   }
 
@@ -586,7 +640,12 @@ class MapPage {
   }
 
   destroy() {
-    this._cancelViewTimer();
+    this._destroyed = true;
+    this._cancelViewSession();
+    if (state.boothViewHandoff) {
+      state.boothViewHandoff.session.cancel();
+      state.boothViewHandoff = null;
+    }
     clearTimeout(this._mapReadyTimer);
     clearTimeout(this._plazaHlTimer);
     clearTimeout(this._typeTimer);

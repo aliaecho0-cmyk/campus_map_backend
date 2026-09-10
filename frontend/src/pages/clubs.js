@@ -136,6 +136,7 @@ class ClubsPage {
       });
       card.querySelector('.map-link').addEventListener('click', (e) => {
         e.stopPropagation();
+        state.startBoothViewAfterMapFocus = String(club.boothId);
         state.highlightBoothId = club.boothId;
         wx.switchTab({ url: '#/map' });
       });
