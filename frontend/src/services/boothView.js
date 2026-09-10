@@ -62,7 +62,11 @@ export function startViewSession(boothId, delayMs = 3000) {
   function deliverSuccess() {
     if (cancelled || !visible || !successData || successDelivered) return;
     successDelivered = true;
-    showToast('摊位收集 +1');
+    const count = successData.uniqueBoothCount || 0;
+    const badge = (successData.badges || []).find((b) => b.code === 'knowitall');
+    const required = (badge && badge.requiredUniqueBooths) || 0;
+    if (badge && count === required) showToast('摊位收集任务已完成，可领取奖励');
+    else if (count < required) showToast('摊位收集 +1');
     if (onProgressChanged) onProgressChanged(successData);
   }
 

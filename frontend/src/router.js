@@ -9,6 +9,8 @@ import mapPage from './pages/map.js';
 import clubsPage from './pages/clubs.js';
 import eventsPage from './pages/events.js';
 import rewardPage from './pages/reward.js';
+import staffPage from './pages/staff.js';
+import staffRedeemPage from './pages/staff-redeem.js';
 import clubDetailPage from './pages/club-detail.js';
 import eventDetailPage from './pages/event-detail.js';
 
@@ -21,12 +23,30 @@ const TABS = [
   { path: '/map', mod: mapPage, index: 0 },
   { path: '/clubs', mod: clubsPage, index: 1 },
   { path: '/events', mod: eventsPage, index: 2 },
-  { path: '/reward', mod: rewardPage, index: 3 },
 ];
 const DETAILS = {
   '/club-detail': clubDetailPage,
   '/event-detail': eventDetailPage,
+  '/staff': staffPage,
+  '/staff/redeem': staffRedeemPage,
 };
+
+function isStaffRole() {
+  try {
+    return localStorage.getItem('user_role') === 'staff';
+  } catch {
+    return false;
+  }
+}
+
+function getTabs() {
+  return [
+    ...TABS,
+    isStaffRole()
+      ? { path: '/staff/redeem', mod: staffRedeemPage, index: 3 }
+      : { path: '/reward', mod: rewardPage, index: 3 },
+  ];
+}
 
 let tabbar = null;
 let current = null;
@@ -48,8 +68,9 @@ function parseHash() {
 
 function render() {
   const { path, query } = parseHash();
-  const tab = TABS.find((t) => t.path === path);
-  const mod = tab ? tab.mod : DETAILS[path] || TABS[0].mod;
+  const tabs = getTabs();
+  const tab = tabs.find((t) => t.path === path);
+  const mod = tab ? tab.mod : DETAILS[path] || tabs[0].mod;
   const isTab = !!tab;
 
   if (current) {
@@ -79,6 +100,7 @@ function render() {
   }
 
   if (isTab) {
+    tabbar.updateForRole();
     headerEl.style.display = 'none';
     tabbarEl.style.display = '';
     tabbar.setSelected(tab.index);

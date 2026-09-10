@@ -1,0 +1,94 @@
+/* pages/staff.css — 工作人员登录页 & 扫码核销页样式 */
+
+.staff-page {
+  padding: 24px 16px calc(70px + var(--safe-b));
+}
+
+.staff-msg {
+  text-align: center;
+  padding: 48px 12px;
+  font-size: 14px;
+  color: var(--text-color-regular);
+}
+
+.staff-login {
+  max-width: 380px;
+  margin: 12px auto;
+  padding: 20px 18px;
+}
+.staff-title {
+  font-family: var(--font-px);
+  font-size: 16px;
+  letter-spacing: 1px;
+  color: var(--text-color-primary);
+  margin-bottom: 14px;
+}
+.staff-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: var(--px-border-w) solid var(--px-border);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-color-white);
+  color: var(--text-color-primary);
+  font-size: 14px;
+  font-family: inherit;
+  margin-bottom: 12px;
+}
+.staff-submit {
+  width: 100%;
+}
+.staff-error {
+  min-height: 20px;
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--danger-color);
+}
+
+/* 扫码核销页 */
+.staff-redeem {
+  padding: 16px 16px calc(70px + var(--safe-b));
+}
+.redeem-staff {
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-family: var(--font-px);
+  letter-spacing: 1px;
+  color: var(--text-color-primary);
+}
+.redeem-scan {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  min-height: 264px;
+  background: #000;
+  border: var(--px-border-w) solid var(--px-border);
+  overflow: hidden;
+}
+.redeem-scan #qr-reader {
+  width: 100%;
+  min-height: 260px;
+}
+.redeem-scan #qr-reader video {
+  width: 100% !important;
+  height: auto;
+  max-height: 320px;
+  object-fit: cover;
+}
+.redeem-result {
+  margin: 14px auto 0;
+  max-width: 400px;
+  min-height: 24px;
+  text-align: center;
+  font-family: var(--font-px);
+  font-size: 19px;
+  letter-spacing: 1px;
+  color: var(--text-color-regular);
+}
+.redeem-result.ok {
+  color: #ff7a00;
+}
+.redeem-result.err {
+  color: var(--danger-color);
+}
