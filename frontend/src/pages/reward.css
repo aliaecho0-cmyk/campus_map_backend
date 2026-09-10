@@ -1,0 +1,136 @@
+/* pages/reward.css — 奖励页样式（复用设计变量） */
+
+.reward-page {
+  padding: 14px 14px calc(70px + var(--safe-b));
+  min-height: 100vh;
+}
+
+.reward-page .countdown-box {
+  margin-bottom: 12px;
+  padding: 14px 16px;
+  background: var(--primary-grad);
+  border: var(--px-border-w) solid var(--px-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 3px 3px 0 var(--px-shadow);
+  color: var(--pal-white);
+  font-family: var(--font-px);
+  font-size: 15px;
+  letter-spacing: 1px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.reward-page .reward-card .card-title {
+  font-family: var(--font-px);
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  color: var(--text-color-primary);
+  margin-bottom: 12px;
+}
+
+.reward-empty {
+  font-size: 13px;
+  color: var(--text-color-secondary);
+  padding: 6px 0;
+}
+
+/* 徽章进度 */
+.badge-name {
+  font-size: 14px;
+  color: var(--text-color-primary);
+  margin-bottom: 6px;
+}
+.badge-status {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border: 1px solid var(--px-border);
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-family: var(--font-px);
+  vertical-align: middle;
+}
+.badge-status.ok {
+  background: var(--pal-deep);
+  color: var(--pal-white);
+}
+.badge-count {
+  font-size: 13px;
+  color: var(--text-color-secondary);
+  margin-bottom: 8px;
+}
+.progress {
+  height: 14px;
+  border: var(--px-border-w) solid var(--px-border);
+  background: var(--fill-soft);
+  position: relative;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--primary-grad);
+  transition: width 0.3s var(--ease-step);
+}
+.badge-locked .progress-fill {
+  animation: px-blink-slow 1.2s steps(2) infinite;
+}
+
+/* 领取 */
+.claim-btn {
+  width: 100%;
+}
+.claim-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  text-align: center;
+  font-family: var(--font-px);
+  letter-spacing: 1px;
+}
+.voucher {
+  border: var(--px-border-w) dashed var(--primary-dark);
+  padding: 16px;
+  text-align: center;
+}
+.voucher-label {
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  font-family: var(--font-px);
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+.voucher-qr {
+  margin-bottom: 10px;
+}
+.voucher-qr .qr-img {
+  width: 200px;
+  height: 200px;
+  max-width: 100%;
+  background: #fff;
+  border: var(--px-border-w) solid var(--px-border);
+  image-rendering: pixelated;
+}
+.voucher-code {
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 3px;
+  color: var(--text-color-primary);
+  font-family: var(--font-px);
+  padding: 8px 0;
+  word-break: break-all;
+}
+.voucher-note {
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  font-family: var(--font-px);
+  letter-spacing: 1px;
+}
+.claim-state {
+  text-align: center;
+  font-size: 15px;
+  font-family: var(--font-px);
+  letter-spacing: 1px;
+  color: var(--text-color-primary);
+  padding: 12px 0;
+}

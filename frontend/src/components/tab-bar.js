@@ -9,6 +9,7 @@ export class TabBar {
       { path: '#/map', text: '地图' },
       { path: '#/clubs', text: '社团' },
       { path: '#/events', text: '活动' },
+      { path: '#/reward', text: '奖励' },
     ];
     this.render();
   }

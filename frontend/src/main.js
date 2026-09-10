@@ -3,7 +3,8 @@ import './styles/motion.css';
 import { start } from './router.js';
 import { ensureLogin } from './services/auth.js';
 
-// 学生无感登录：启动即执行；内部有 token 去重，失败时非阻断降级，不阻塞页面渲染
-ensureLogin();
-
-start();
+// 先完成无感登录（或失败降级），再启动路由
+// 这样页面渲染时 token 已就绪，避免首屏接口 401
+ensureLogin().finally(() => {
+  start();
+});

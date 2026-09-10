@@ -8,6 +8,7 @@ import { MapTutorial } from './components/map-tutorial.js';
 import mapPage from './pages/map.js';
 import clubsPage from './pages/clubs.js';
 import eventsPage from './pages/events.js';
+import rewardPage from './pages/reward.js';
 import clubDetailPage from './pages/club-detail.js';
 import eventDetailPage from './pages/event-detail.js';
 
@@ -20,6 +21,7 @@ const TABS = [
   { path: '/map', mod: mapPage, index: 0 },
   { path: '/clubs', mod: clubsPage, index: 1 },
   { path: '/events', mod: eventsPage, index: 2 },
+  { path: '/reward', mod: rewardPage, index: 3 },
 ];
 const DETAILS = {
   '/club-detail': clubDetailPage,
