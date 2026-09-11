@@ -12,6 +12,7 @@ export const HTTP_STATUS_BY_CODE = {
   EVENT_NOT_ACTIVE: 409,
   CLAIM_TOKEN_EXPIRED: 409,
   CLAIM_TOKEN_REDEEMED: 409,
+  PAYLOAD_TOO_LARGE: 413,
 };
 
 export const CODE_MESSAGE = {
@@ -25,6 +26,8 @@ export const CODE_MESSAGE = {
   EVENT_NOT_ACTIVE: '活动当前不可用',
   CLAIM_TOKEN_EXPIRED: '已超过活动截止时间',
   CLAIM_TOKEN_REDEEMED: '领取码已经核销',
+  PAYLOAD_TOO_LARGE: '请求体过大',
+  INTERNAL_SERVER_ERROR: '服务器内部错误',
 };
 
 /**
@@ -38,7 +41,12 @@ export function statusForCode(code) {
 
 /**
  * Express 错误处理中间件（四个参数，缺一不可）。
- * err.message 视为错误码：命中映射则返回对应状态与统一格式；否则按内部错误返回 500。
+ * 错误分类优先级：
+ *   1. 业务错误码：err.message 即错误码（如 AUTH_REQUIRED），按映射表取状态；
+ *   2. body-parser / express.json 的请求解析错误：优先按 err.type / err.status 归类
+ *      （entity.too.large → 413，entity.parse.failed 或其它 4xx status → 400），
+ *      避免被 err.message 匹配逻辑误判成 500；
+ *   3. 兜底：INTERNAL_SERVER_ERROR → 500。
  * 开发环境（NODE_ENV=development）额外返回 err.stack。
  * @param {Error} err
  * @param {import('express').Request} req
@@ -47,21 +55,35 @@ export function statusForCode(code) {
  */
 export function errorHandler(err, req, res, next) {
   const isDev = process.env.NODE_ENV === 'development';
-  const code = err && typeof err.message === 'string' ? err.message : null;
-  const status = code ? statusForCode(code) : undefined;
 
-  if (status) {
-    console.error(`${new Date().toISOString()} [${code}]`, err.stack || err);
-    const body = { error: { code, message: CODE_MESSAGE[code] ?? code } };
-    if (isDev) body.error.stack = err.stack;
-    res.status(status).json(body);
-    return;
+  const msgCode = err && typeof err.message === 'string' ? err.message : null;
+  const mappedStatus = msgCode ? statusForCode(msgCode) : undefined;
+
+  let status;
+  let code;
+  if (mappedStatus) {
+    // 业务错误码：命中映射表则直接采用（401/403/404/409…，不受影响）
+    status = mappedStatus;
+    code = msgCode;
+  } else if (err?.type === 'entity.too.large') {
+    status = 413;
+    code = 'PAYLOAD_TOO_LARGE';
+  } else if (err?.type === 'entity.parse.failed') {
+    status = 400;
+    code = 'INVALID_REQUEST';
+  } else if (typeof err?.status === 'number' && err.status >= 400 && err.status < 500) {
+    // 其它带 4xx status 的错误（如 strict 模式拒绝非对象 body）直接采用；5xx 不在此分支
+    status = err.status;
+    code = err.status === 413 ? 'PAYLOAD_TOO_LARGE' : 'INVALID_REQUEST';
+  } else {
+    status = 500;
+    code = 'INTERNAL_SERVER_ERROR';
   }
 
-  console.error(`${new Date().toISOString()} [INTERNAL_SERVER_ERROR]`, err?.stack || err);
-  const body = { error: { code: 'INTERNAL_SERVER_ERROR', message: '服务器内部错误' } };
+  console.error(`${new Date().toISOString()} [${code}]`, err?.stack || err);
+  const body = { error: { code, message: CODE_MESSAGE[code] ?? code } };
   if (isDev && err) body.error.stack = err.stack;
-  res.status(500).json(body);
+  res.status(status).json(body);
 }
 
 export default errorHandler;

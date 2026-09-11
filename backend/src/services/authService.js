@@ -61,7 +61,7 @@ export function studentLogin(deviceId) {
  * @throws {Error} 识别码错误或姓名不在白名单 → AUTH_REQUIRED；无当前活动 → EVENT_NOT_FOUND；活动已结束 → EVENT_NOT_ACTIVE
  */
 export function staffLogin(code, name) {
-  if (code !== process.env.STAFF_CODE) {
+  if (!process.env.STAFF_CODE || code !== process.env.STAFF_CODE) {
     throw new Error('AUTH_REQUIRED');
   }
   const member = findByName(name);
