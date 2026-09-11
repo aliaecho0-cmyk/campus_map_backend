@@ -10,8 +10,8 @@ import * as annSvc from '../services/announcement.js';
 import * as canvasMap from '../utils/canvas-map.js';
 import { buildMatch } from '../utils/search.js';
 import { CustomMap } from '../components/custom-map.js';
-import * as tut from './map/tutorial-steps.js';
 import { startViewSession } from '../services/boothView.js';
+import * as tut from './map/tutorial-steps.js';
 
 const CAT_KEY_MAP = {
   学术: 'academic',
@@ -22,6 +22,9 @@ const CAT_KEY_MAP = {
 };
 
 const STATUS_TEXT = { open: '营业中', break: '休息中', closed: '已收摊' };
+
+/** 聚焦某个摊位时的缩放：约 6 格可见 */
+const FOCUS_SCALE = 1.9;
 
 function h(tag, cls, html) {
   const e = document.createElement(tag);
@@ -100,6 +103,7 @@ class MapPage {
     this._destroyed = false;
     this._handoffReady = false;
     this._handoffSession = null;
+    this._viewSession = null;
     // 教程运行时
     this._tutorialActive = false;
     this._exampleBoothId = tut.EXAMPLE_BOOTH_ID;
@@ -362,7 +366,8 @@ class MapPage {
     this.searchPanel.innerHTML = '';
     this.map.setHighlightedId(id);
     const c = this.map;
-    c.focusMapPoint(booth.mapX, booth.mapY, 1.3).then(() => {
+    const point = c.getBoothMapPoint(id) || { x: booth.mapX, y: booth.mapY };
+    c.focusMapPoint(point.x, point.y, FOCUS_SCALE).then(() => {
       const rect = c.getBoothLocalCenter(id);
       if (rect) this.showCallout(booth, rect.x, rect.y);
     });
@@ -414,11 +419,11 @@ class MapPage {
   focusBooth(b, onCalloutShown) {
     this.map.setHighlightedId(b.id);
     const c = this.map;
-    c.focusMapPoint(b.mapX, b.mapY, 1.15).then(() => {
+    const point = c.getBoothMapPoint(b.id) || { x: b.mapX, y: b.mapY };
+    c.focusMapPoint(point.x, point.y, FOCUS_SCALE).then(() => {
       if (this._destroyed) return;
       const rect = c.getBoothLocalCenter(b.id);
-      if (!rect) return;
-      this.showCallout(b, rect.x, rect.y);
+      if (rect) this.showCallout(b, rect.x, rect.y);
       if (onCalloutShown) onCalloutShown();
     });
     setTimeout(() => this.map.setHighlightedId(''), 3000);
@@ -535,6 +540,8 @@ class MapPage {
             new Promise((res) => {
               setTimeout(() => {
                 const r = c.getPointScreenRect(tut.SOCIAL_UNION.mapX, tut.SOCIAL_UNION.mapY, 1.0);
+                r.left -= r.width / 2;
+                r.width *= 2; // 社联是一座完整的 4×2 格展台。
                 res(this._pack([this._toRect(r, 'round')]));
               }, 500);
             })
@@ -598,7 +605,8 @@ class MapPage {
     const c = this.map;
     const b = this._resolveExampleBooth();
     if (!c || !b) return Promise.resolve();
-    return c.focusMapPoint(b.mapX, b.mapY, 1.15);
+    const point = c.getBoothMapPoint(b.id) || { x: b.mapX, y: b.mapY };
+    return c.focusMapPoint(point.x, point.y, 1.15);
   }
 
   onTutorialNext() {
