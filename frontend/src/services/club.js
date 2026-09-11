@@ -7,7 +7,7 @@ async function getClubs({ category = '', keyword = '', page = 1, pageSize = 20 }
   const boothMap = {};
   mock.booths.forEach((b) => (boothMap[b.clubId] = b));
   let list = mock.clubs.map((c) => {
-    const b = boothMap[c.clubId];
+    const b = boothMap[c.id]; // clubs 上 clubId 存在 id 字段（同 getClubDetail 的 clubId 入参）
     return { ...c, status: b ? b.status : '', lat: b ? b.lat : 0, lng: b ? b.lng : 0 };
   });
   if (category) list = list.filter((c) => c.category === category);
