@@ -55,15 +55,15 @@ const CELL_TYPES = {
 };
 
 const LABELS = [
-  { x: 24.5, y: 2.3, text: '图书馆', size: 0.66 },
-  { x: 24.75, y: 7.6, text: '水池', size: 0.66 },
-  { x: 9, y: 7.75, text: '下沉广场', size: 0.66 },
-  { x: 9.25, y: 15.85, text: '草坪', size: 0.66 },
-  { x: 24.3, y: 15.95, text: '草坪', size: 0.66 },
-  { x: 10.75, y: 19.75, text: '社联摊位', size: 0.66, fill: '#102a56' },
-  { x: 20, y: 25.18, text: '一瓯茶', size: 0.66 },
-  { x: 3.25, y: 3.35, text: '感谢', size: 0.66 },
-];
+  { x: 25.4, y: 2.55, text: '图书馆' },
+  { x: 25.4, y: 8, text: '水池' },
+  { x: 10, y: 8.55, text: '下沉广场' },
+  { x: 9.5, y: 16.3, text: '草坪' },
+  { x: 25, y: 16.5, text: '草坪' },
+  { x: 12, y: 20.35, text: '社联摊位' },
+  { x: 20.5, y: 26.5, text: '一鸥茶' },
+  { x: 3.5, y: 1.6, text: '社联兑奖点' },
+].map((label) => ({ ...label, size: 0.5, fill: '#594661' }));
 
 function inGrid(x, y) {
   return Number.isInteger(x) && Number.isInteger(y) &&

@@ -913,7 +913,7 @@ export default `<?xml version="1.0" encoding="UTF-8"?>
 <text x="9.25" y="15.85" font-size="0.66">草坪</text>
 <text x="24.3" y="15.95" font-size="0.66">草坪</text>
 <text x="10.75" y="19.75" font-size="0.66" fill="#102a56">社联摊位</text>
-<text x="20" y="25.18" font-size="0.66">一瓯茶</text>
-<text x="3.25" y="3.35" font-size="0.66">感谢</text>
+<text x="20" y="25.18" font-size="0.66">一鸥茶</text>
+<text x="3.25" y="3.35" font-size="0.66">社联兑奖点</text>
 </g>
 </svg>`;

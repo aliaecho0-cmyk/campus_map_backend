@@ -2,15 +2,16 @@
  * components/custom-map.js — 30×30 格栅化校园地图（web 版，由小程序 Component 重写为 class）
  *
  * 与原组件保持一致的坐标/手势/绘制逻辑：
- * - 整张地图用 <canvas> 绘制命令生成，底图来自 historical-map-svg.js 的 SVG 字符串，
- *   经 svg-canvas-renderer 直接渲染进 canvas（不加载图片）。
+ * - map-painter 绘制参考模板底图，historical-map-svg 作为加载失败时的回退。
  * - 缩放/平移只通过 canvas 元素的 CSS transform 实现，位图整体缩放。
- * - 手势：Pointer 事件（触摸/鼠标统一）+ 鼠标滚轮缩放。
+ * - 手势：触摸事件（非 passive + preventDefault，从宿主 WebView 手里抢回手势）
+ *   与鼠标事件分两路；滚轮平移，Ctrl/⌘+滚轮缩放。
+ *   触摸点始终从事件重新读取（e.touches），绝不自己缓存触摸集合。
  */
 import * as canvasMap from '../utils/canvas-map.js';
 import SVG_BASE_FALLBACK from './historical-map-svg.js';
 import renderSVG from './svg-canvas-renderer.js';
-import { createMapPainter } from './map-painter.js';
+import { createMapPainter, MAP_IMAGE_WIDTH, MAP_IMAGE_HEIGHT } from './map-painter.js';
 
 const MAP_WIDTH = canvasMap.GRID_COLS * canvasMap.CELL_PX;
 const MAP_HEIGHT = canvasMap.GRID_ROWS * canvasMap.CELL_PX;
@@ -21,6 +22,27 @@ const CLAMP_MARGIN = 80;
 
 const DEFAULT_VIEW_CELLS_X = 17;
 const DEFAULT_FOCUS_CENTER = { x: 11, y: 14 };
+
+/* 参考位图的摊位并非严格等距，按钮按实测中心绘制，避免越往下偏差越大。 */
+const BOOTH_COLUMN_CENTERS = {
+  0: 15, 1: 50, 2: 90, 3: 128, 4: 160, 5: 198, 6: 238, 7: 273, 8: 308, 9: 344,
+  10: 379, 11: 414, 12: 450, 13: 485, 14: 521, 15: 563, 16: 600, 17: 635, 19: 697,
+};
+
+const BOOTH_ROW_CENTERS = {
+  1: 57, 3: 126, 4: 168, 5: 203, 6: 238, 7: 274, 8: 308, 9: 344, 10: 380,
+  11: 414, 13: 488, 14: 527, 15: 564, 16: 603, 17: 640, 18: 679, 19: 716,
+  20: 755, 21: 788, 23: 864, 25: 932, 26: 968, 27: 1005,
+};
+
+function getBoothRenderPoint(booth) {
+  const column = Math.floor(booth.mapX);
+  const row = Math.floor(booth.mapY);
+  return {
+    x: BOOTH_COLUMN_CENTERS[column] ?? booth.mapX * canvasMap.CELL_PX,
+    y: BOOTH_ROW_CENTERS[row] ?? booth.mapY * canvasMap.CELL_PX,
+  };
+}
 
 function getDefaultFocus(width, height) {
   const cellsY = DEFAULT_VIEW_CELLS_X * (height / width);
@@ -55,22 +77,31 @@ export class CustomMap {
     this._ctx = null;
     this._baseCanvas = null;
     this._baseCtx = null;
+    this._baseDrawn = false;
     this._svgString = SVG_BASE_FALLBACK;
+    this._painter = null;
 
     // 手势运行时
-    this._pointers = new Map();
     this._gesture = null;
+    this._mouseDown = false;
     this._touchStartTime = 0;
     this._touchMoved = 0;
     this._lastPoint = null;
+    this._lastTouchTs = 0; // 触摸后短时间内忽略合成的鼠标事件
+    this._moveTimer = 0;
+    this._h = null;
 
     this._onResize = () => {
       this._rect = this.root.getBoundingClientRect();
+      if (this.canvas) this._apply(this._viewport);
     };
     window.addEventListener('resize', this._onResize);
 
-    this._initCanvas();
+    // 尺寸/坐标/初始取景必须同步完成：页面在微任务里就会调 focusMapPoint，
+    // 地图就绪后即可响应页面聚焦。
+    this._initCanvasSync();
     this._bindGestures();
+    this._loadPainter();
   }
 
   /** 更新摊位列表（数据变化时重绘，缩放/平移不重绘） */
@@ -93,7 +124,8 @@ export class CustomMap {
     return window.devicePixelRatio || 1;
   }
 
-  async _initCanvas() {
+  /** 同步部分：画布尺寸、坐标系、初始取景（不依赖贴图） */
+  _initCanvasSync() {
     const canvas = this.canvas;
     if (!canvas) return;
     const dpr = this._dprOf();
@@ -103,6 +135,7 @@ export class CustomMap {
     canvas.height = MAP_HEIGHT * dpr;
     const ctx = canvas.getContext('2d');
     ctx.scale(dpr, dpr);
+    ctx.imageSmoothingEnabled = false;
     this._canvas = canvas;
     this._ctx = ctx;
     this._dpr = dpr;
@@ -110,10 +143,10 @@ export class CustomMap {
     // 离屏 canvas 一次性渲染底图
     try {
       const off = document.createElement('canvas');
-      off.width = MAP_WIDTH * dpr;
-      off.height = MAP_HEIGHT * dpr;
+      off.width = MAP_IMAGE_WIDTH;
+      off.height = MAP_IMAGE_HEIGHT;
       const offCtx = off.getContext('2d');
-      offCtx.scale(dpr, dpr);
+      offCtx.scale(MAP_IMAGE_WIDTH / MAP_WIDTH, MAP_IMAGE_HEIGHT / MAP_HEIGHT);
       this._baseCanvas = off;
       this._baseCtx = offCtx;
     } catch (err) {
@@ -121,30 +154,56 @@ export class CustomMap {
       this._baseCtx = null;
     }
 
-    // 包内模式：直接用 historical-map-svg.js；像素贴图层就绪后网格线换丁香紫
-    this._painter = null;
-    try {
-      this._painter = await createMapPainter();
-    } catch (err) {
-      console.warn('[custom-map] 地图贴图加载失败，回退纯色底图', err);
-    }
-    this._svgString = this._painter
-      ? SVG_BASE_FALLBACK.replace(/#e2e4e8/gi, '#c386db')
-      : SVG_BASE_FALLBACK;
-    this._renderBaseToOffscreen();
-    this._drawAll();
-
     this._rect = this.root.getBoundingClientRect();
     this._fitInitial(this._rect);
+    this._drawAll();
+    this._refreshFont();
+  }
+
+  async _loadPainter() {
+    try {
+      this._painter = await createMapPainter();
+      this._renderBaseToOffscreen();
+      this._baseDrawn = true;
+      this._drawAll();
+    } catch (err) {
+      console.warn('[custom-map] 地图参考模板加载失败，使用语义底图', err);
+    }
+  }
+
+  /** 像素字体就绪后补一次重绘（canvas 不会自己重排已经画上去的文字） */
+  _refreshFont() {
+    const fonts = document.fonts;
+    if (!fonts || typeof fonts.load !== 'function') return;
+    fonts.load('18px "px-cjk"', '0123456789社联兑奖点一鸥茶草坪图书馆').then(
+      () => {
+        this._drawAll();
+      },
+      () => {}
+    );
   }
 
   _bindGestures() {
-    const el = this.canvas;
-    el.addEventListener('pointerdown', (e) => this._onPointerDown(e));
-    el.addEventListener('pointermove', (e) => this._onPointerMove(e));
-    el.addEventListener('pointerup', (e) => this._onPointerUp(e));
-    el.addEventListener('pointercancel', (e) => this._onPointerUp(e));
-    el.addEventListener('wheel', (e) => this._onWheel(e), { passive: false });
+    const root = this.root;
+    const h = (this._h = {
+      touchstart: (e) => this._onTouchStart(e),
+      touchmove: (e) => this._onTouchMove(e),
+      touchend: (e) => this._onTouchEnd(e),
+      touchcancel: (e) => this._onTouchCancel(e),
+      mousedown: (e) => this._onMouseDown(e),
+      mousemove: (e) => this._onMouseMove(e),
+      mouseup: (e) => this._onMouseUp(e),
+      wheel: (e) => this._onWheel(e),
+    });
+    // 非 passive + preventDefault 是唯一能确实从 WebView 手里抢回手势的手段
+    root.addEventListener('touchstart', h.touchstart, { passive: false });
+    root.addEventListener('touchmove', h.touchmove, { passive: false });
+    root.addEventListener('touchend', h.touchend);
+    root.addEventListener('touchcancel', h.touchcancel);
+    root.addEventListener('mousedown', h.mousedown);
+    window.addEventListener('mousemove', h.mousemove);
+    window.addEventListener('mouseup', h.mouseup);
+    root.addEventListener('wheel', h.wheel, { passive: false });
   }
 
   /* ---------- 手势 ---------- */
@@ -153,103 +212,148 @@ export class CustomMap {
     return { x: clientX - r.left, y: clientY - r.top };
   }
 
-  _onPointerDown(e) {
-    this.canvas.setPointerCapture && this.canvas.setPointerCapture(e.pointerId);
-    this._pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    this.canvas.classList.remove('with-transition');
-    this._touchStartTime = Date.now();
-    this._touchMoved = 0;
-    this._lastPoint = { x: e.clientX, y: e.clientY };
-    this._initGesture();
+  /** 触摸点始终从事件现读，避免 WebView 漏发 touchend 时留下幽灵手指 */
+  _pointsOf(list) {
+    const out = [];
+    for (let i = 0; i < list.length; i++) {
+      out.push({ x: list[i].clientX, y: list[i].clientY });
+    }
+    return out;
   }
 
-  _onPointerMove(e) {
-    if (!this._pointers.has(e.pointerId)) return;
-    this._pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  _midpoint(pts) {
+    if (!pts.length) return null;
+    if (pts.length === 1) return { x: pts[0].x, y: pts[0].y };
+    let sx = 0;
+    let sy = 0;
+    for (const p of pts) {
+      sx += p.x;
+      sy += p.y;
+    }
+    return { x: sx / pts.length, y: sy / pts.length };
+  }
 
-    // 移动判定：一旦判定为平移/缩放手势，通知父页面关闭气泡
+  /** 累计位移；超过 6px 即认定是拖动，通知父页面关闭气泡 */
+  _noteMove(p) {
+    if (!p) return;
     if (this._lastPoint) {
-      const dx = e.clientX - this._lastPoint.x;
-      const dy = e.clientY - this._lastPoint.y;
-      this._touchMoved += Math.hypot(dx, dy);
+      this._touchMoved += Math.hypot(p.x - this._lastPoint.x, p.y - this._lastPoint.y);
     }
-    this._lastPoint = { x: e.clientX, y: e.clientY };
-    if (this._touchMoved > 6) {
-      this._onBoothCancel();
-    }
+    this._lastPoint = p;
+    if (this._touchMoved > 6) this._onBoothCancel();
+  }
 
-    const pts = [...this._pointers.values()];
-    const g = this._gesture;
-    if (!g || (g.mode === 'scale' && pts.length < 2) || (g.mode === 'pan' && pts.length >= 2)) {
-      this._initGesture();
+  _onTouchStart(e) {
+    this._lastTouchTs = Date.now();
+    e.preventDefault();
+    const pts = this._pointsOf(e.touches);
+    if (pts.length >= 2) {
+      this._touchMoved = Infinity; // 多指绝不判定为点击
+    } else {
+      this._touchStartTime = Date.now();
+      this._touchMoved = 0;
+    }
+    this._lastPoint = this._midpoint(pts);
+    this.canvas.classList.remove('with-transition');
+    this._initGesture(pts);
+  }
+
+  _onTouchMove(e) {
+    e.preventDefault();
+    const pts = this._pointsOf(e.touches);
+    if (!pts.length) return;
+    this._noteMove(this._midpoint(pts));
+    this._moveGesture(pts);
+  }
+
+  _onTouchEnd(e) {
+    const pts = this._pointsOf(e.touches);
+    if (pts.length) {
+      // 还有手指在屏上：立刻用剩下的手指重新锚定，否则悬停不动就永远不动
+      this._touchMoved = Infinity;
+      this._lastPoint = this._midpoint(pts);
+      this._initGesture(pts);
       return;
     }
-    const vp = this._viewport || { scale: 1, x: 0, y: 0 };
-    if (g.mode === 'pan') {
-      const p = pts[0];
-      const dx = p.x - g.startX;
-      const dy = p.y - g.startY;
-      this._apply({ scale: vp.scale, x: g.startVX + dx, y: g.startVY + dy });
-    } else {
-      const p1 = pts[0];
-      const p2 = pts[1];
-      const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
-      let scale = g.startScale * (dist / g.startDist);
-      scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
-      this._apply({ scale, x: g.midX - g.mapX * scale, y: g.midY - g.mapY * scale });
-    }
-  }
-
-  _onPointerUp(e) {
-    this._pointers.delete(e.pointerId);
-
     const isTap =
       this._touchStartTime &&
       Date.now() - this._touchStartTime < 250 &&
-      this._touchMoved < 8 &&
-      this._pointers.size === 0;
-    if (isTap && this._lastPoint && this._rect) {
-      const local = this._toLocal(this._lastPoint.x, this._lastPoint.y);
-      const vp = this._viewport || { scale: 1, x: 0, y: 0 };
-      const mapPxX = (local.x - vp.x) / vp.scale;
-      const mapPxY = (local.y - vp.y) / vp.scale;
-      const mapX = mapPxX / canvasMap.CELL_PX;
-      const mapY = mapPxY / canvasMap.CELL_PX;
-      const hitId = this._hitTest(mapX, mapY);
-      if (hitId) {
-        const booth = this._booths.find((b) => b.id === hitId);
-        const mx = booth ? booth.mapX : mapX;
-        const my = booth ? booth.mapY : mapY;
-        const sx = mx * canvasMap.CELL_PX * vp.scale + vp.x;
-        const sy = my * canvasMap.CELL_PX * vp.scale + vp.y;
-        this._onBoothTap({ id: hitId, x: sx, y: sy });
-      } else {
-        this._onBoothCancel();
-      }
-    }
+      this._touchMoved < 8;
+    const t = e.changedTouches && e.changedTouches[0];
     this._gesture = null;
+    if (isTap && t) this._tapAt(t.clientX, t.clientY);
+  }
+
+  /** 被宿主抢走手势时到达：只重新锚定，绝不当作点击（否则会误弹气泡） */
+  _onTouchCancel(e) {
+    this._touchMoved = Infinity;
+    const pts = this._pointsOf(e.touches);
+    if (!pts.length) {
+      this._gesture = null;
+      return;
+    }
+    this._lastPoint = this._midpoint(pts);
+    this._initGesture(pts);
+  }
+
+  _onMouseDown(e) {
+    if (e.button !== 0) return;
+    if (Date.now() - this._lastTouchTs < 700) return; // 触摸后补发的合成鼠标事件
+    const p = { x: e.clientX, y: e.clientY };
+    this._mouseDown = true;
+    this._touchStartTime = Date.now();
+    this._touchMoved = 0;
+    this._lastPoint = p;
+    this.canvas.classList.remove('with-transition');
+    this._initGesture([p]);
+  }
+
+  _onMouseMove(e) {
+    if (!this._mouseDown) return;
+    this._noteMove({ x: e.clientX, y: e.clientY });
+    this._moveGesture([{ x: e.clientX, y: e.clientY }]);
+  }
+
+  _onMouseUp(e) {
+    if (!this._mouseDown) return;
+    this._mouseDown = false;
+    const isTap =
+      this._touchStartTime &&
+      Date.now() - this._touchStartTime < 250 &&
+      this._touchMoved < 8;
+    this._gesture = null;
+    if (isTap) this._tapAt(e.clientX, e.clientY);
   }
 
   _onWheel(e) {
     e.preventDefault();
     if (!this._rect) return;
-    const local = this._toLocal(e.clientX, e.clientY);
+    // deltaMode: 0=像素 1=行 2=页
+    const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? this._rect.height || 800 : 1;
     const vp = this._viewport || { scale: 1, x: 0, y: 0 };
-    const mapX = (local.x - vp.x) / vp.scale;
-    const mapY = (local.y - vp.y) / vp.scale;
-    const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
-    let scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, vp.scale * factor));
-    this._apply({ scale, x: local.x - mapX * scale, y: local.y - mapY * scale });
+    if (e.ctrlKey || e.metaKey) {
+      // 触控板双指捏合也走这条分支
+      const local = this._toLocal(e.clientX, e.clientY);
+      const mapX = (local.x - vp.x) / vp.scale;
+      const mapY = (local.y - vp.y) / vp.scale;
+      const d = Math.max(-120, Math.min(120, e.deltaY * k));
+      const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, vp.scale * Math.pow(1.0015, -d)));
+      this._apply({ scale, x: local.x - mapX * scale, y: local.y - mapY * scale });
+      return;
+    }
+    this._apply({ scale: vp.scale, x: vp.x - e.deltaX * k, y: vp.y - e.deltaY * k });
   }
 
-  _initGesture() {
-    const pts = [...this._pointers.values()];
+  _initGesture(pts) {
+    this._rect = this.root.getBoundingClientRect(); // 地址栏收放后坐标会偏
     const vp = this._viewport || { scale: 1, x: 0, y: 0 };
     if (pts.length >= 2) {
-      const p1 = pts[0];
-      const p2 = pts[1];
-      const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
-      const mid = this._toLocal((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      if (!dist) {
+        this._gesture = null;
+        return;
+      }
+      const mid = this._toLocal((pts[0].x + pts[1].x) / 2, (pts[0].y + pts[1].y) / 2);
       this._gesture = {
         mode: 'scale',
         startDist: dist,
@@ -260,17 +364,67 @@ export class CustomMap {
         mapY: (mid.y - vp.y) / vp.scale,
       };
     } else if (pts.length === 1) {
-      const p = pts[0];
-      this._gesture = { mode: 'pan', startX: p.x, startY: p.y, startVX: vp.x, startVY: vp.y };
+      this._gesture = {
+        mode: 'pan',
+        startX: pts[0].x,
+        startY: pts[0].y,
+        startVX: vp.x,
+        startVY: vp.y,
+      };
     } else {
       this._gesture = null;
     }
   }
 
+  _moveGesture(pts) {
+    const g = this._gesture;
+    if (!g) return;
+    const vp = this._viewport || { scale: 1, x: 0, y: 0 };
+    if (g.mode === 'pan') {
+      if (!pts.length) return;
+      this._apply({
+        scale: vp.scale,
+        x: g.startVX + (pts[0].x - g.startX),
+        y: g.startVY + (pts[0].y - g.startY),
+      });
+      return;
+    }
+    if (pts.length < 2) return;
+    const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, g.startScale * (dist / g.startDist)));
+    this._apply({ scale, x: g.midX - g.mapX * scale, y: g.midY - g.mapY * scale });
+  }
+
+  /** 点击命中：只处理"按下→抬起"这一件事，与输入通道无关 */
+  _tapAt(clientX, clientY) {
+    if (!this._rect) return;
+    const local = this._toLocal(clientX, clientY);
+    const vp = this._viewport || { scale: 1, x: 0, y: 0 };
+    const mapX = (local.x - vp.x) / vp.scale / canvasMap.CELL_PX;
+    const mapY = (local.y - vp.y) / vp.scale / canvasMap.CELL_PX;
+    const hitId = this._hitTest(mapX, mapY);
+    if (!hitId) {
+      this._onBoothCancel();
+      return;
+    }
+    const booth = this._booths.find((b) => b.id === hitId);
+    const point = booth ? getBoothRenderPoint(booth) : null;
+    const mx = point ? point.x / canvasMap.CELL_PX : mapX;
+    const my = point ? point.y / canvasMap.CELL_PX : mapY;
+    this._onBoothTap({
+      id: hitId,
+      x: mx * canvasMap.CELL_PX * vp.scale + vp.x,
+      y: my * canvasMap.CELL_PX * vp.scale + vp.y,
+    });
+  }
+
   _hitTest(mapX, mapY) {
-    const cx = Math.floor(mapX);
-    const cy = Math.floor(mapY);
-    const booth = this._booths.find((item) => Math.floor(item.mapX) === cx && Math.floor(item.mapY) === cy);
+    const px = mapX * canvasMap.CELL_PX;
+    const py = mapY * canvasMap.CELL_PX;
+    const booth = this._booths.find((item) => {
+      const point = getBoothRenderPoint(item);
+      return Math.abs(point.x - px) <= 19 && Math.abs(point.y - py) <= 19;
+    });
     return booth ? booth.id : null;
   }
 
@@ -305,7 +459,8 @@ export class CustomMap {
       this._viewport = { scale: s, x, y };
       this.canvas.classList.add('with-transition');
       this._apply({ scale: s, x, y });
-      setTimeout(() => {
+      clearTimeout(this._moveTimer); // 连续两次聚焦时，别让上一个定时器提前摘掉过渡
+      this._moveTimer = setTimeout(() => {
         this.canvas.classList.remove('with-transition');
         resolve();
       }, 360);
@@ -333,8 +488,11 @@ export class CustomMap {
     if (!ctx) return;
     ctx.clearRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
     this._drawBaseMap(ctx);
+    this._drawPrizePointLabel(ctx);
+    this._drawTeaShopLabel(ctx);
     this._drawBooths(ctx);
     this._drawRegionHighlight(ctx);
+    this._drawBoothNumbers(ctx);
   }
 
   _renderSvg(ctx, svg) {
@@ -346,11 +504,7 @@ export class CustomMap {
     ctx.translate(tx, ty);
     ctx.scale(scale, scale);
     if (this._painter) this._painter.paint(ctx);
-    renderSVG(ctx, svg, {
-      skipFill: this._painter
-        ? (a) => this._painter.paintedKeys.has(`${a['data-x']},${a['data-y']}`)
-        : null,
-    });
+    else renderSVG(ctx, svg);
     ctx.restore();
   }
 
@@ -372,8 +526,17 @@ export class CustomMap {
   }
 
   _drawBaseMap(ctx) {
-    if (this._baseCanvas) {
+    // _baseDrawn 之前离屏画布还是空白，直接画上去会让地图整个空掉
+    if (this._baseCanvas && this._baseDrawn) {
+      ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(this._baseCanvas, 0, 0, MAP_WIDTH, MAP_HEIGHT);
+      // 底图左侧额外烘焙了一枚 9 号牌；以紧邻的林地纹理覆盖，保留数据中的正式 9 号。
+      ctx.drawImage(this._baseCanvas, 0, 488, 44, 58, 32, 423, 38, 51);
+      // 24 号上方残留的旧 25 号牌已不属于最新规划，用同一底图的草地纹理补齐。
+      ctx.drawImage(this._baseCanvas, 399, 596, 44, 64, 109, 610, 40, 56);
+      ctx.restore();
       return;
     }
     const svg = this._svgString;
@@ -389,14 +552,90 @@ export class CustomMap {
     ctx.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
   }
 
+  /** 覆盖底图旧字，确保左上角服务地标始终显示正式名称。 */
+  _drawPrizePointLabel(ctx) {
+    ctx.save();
+    ctx.fillStyle = '#39284c';
+    ctx.fillRect(71, 43, 112, 30);
+    ctx.fillStyle = '#6c4660';
+    ctx.fillRect(68, 40, 112, 30);
+    ctx.fillStyle = '#d99d83';
+    ctx.fillRect(71, 43, 106, 24);
+    ctx.fillStyle = '#f1c8ad';
+    ctx.fillRect(74, 46, 100, 18);
+    ctx.fillStyle = '#fff0cf';
+    ctx.fillRect(75, 46, 98, 2);
+    ctx.fillStyle = '#49314f';
+    ctx.font = '16px "px-cjk", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('社联兑奖点', 124, 56);
+    ctx.restore();
+  }
+
+  /** 覆盖参考图中的旧茶店名，保持原木牌造型。 */
+  _drawTeaShopLabel(ctx) {
+    ctx.save();
+    ctx.fillStyle = '#f1c8ad';
+    ctx.fillRect(708, 954, 72, 25);
+    ctx.fillStyle = '#fff0cf';
+    ctx.fillRect(710, 955, 68, 2);
+    ctx.fillStyle = '#9e6a66';
+    ctx.fillRect(712, 959, 2, 2);
+    ctx.fillRect(775, 959, 2, 2);
+    ctx.fillRect(712, 974, 2, 2);
+    ctx.fillRect(775, 974, 2, 2);
+    ctx.fillStyle = '#49314f';
+    ctx.font = '16px "px-cjk", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('一鸥茶', 744, 968);
+    ctx.restore();
+  }
+
+  /** 用真实数据重绘像素号码牌，覆盖参考图中可能失真的图片文字。 */
+  _drawBoothNumbers(ctx) {
+    if (!this._booths.length) return;
+    const cellPx = canvasMap.CELL_PX;
+    ctx.save();
+    // 状态会被上一个绘制函数残留，这里全部显式设定
+    ctx.font = '16px "px-cjk", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const b of this._booths) {
+      const point = getBoothRenderPoint(b);
+      const x = Math.round(point.x - 17);
+      const y = Math.round(point.y - 17);
+      // 右下硬阴影、木框、羊皮纸面与青绿色棚檐沿用参考图的摊位语言。
+      ctx.fillStyle = '#39284c';
+      ctx.fillRect(x + 4, y + 5, 33, 33);
+      ctx.fillStyle = '#6c4660';
+      ctx.fillRect(x + 1, y + 2, 34, 34);
+      ctx.fillStyle = '#d99d83';
+      ctx.fillRect(x + 3, y + 4, 30, 30);
+      ctx.fillStyle = '#f1c8ad';
+      ctx.fillRect(x + 5, y + 8, 26, 24);
+      ctx.fillStyle = '#437f73';
+      ctx.fillRect(x + 4, y + 3, 28, 6);
+      ctx.fillStyle = '#78aaa0';
+      ctx.fillRect(x + 7, y + 3, 22, 2);
+      ctx.fillStyle = '#fff0cf';
+      ctx.fillRect(x + 6, y + 10, 24, 2);
+      ctx.fillStyle = '#49314f';
+      ctx.fillText(b.id, point.x, point.y + 4);
+    }
+    ctx.restore();
+  }
+
   _drawBooths(ctx) {
     const hl = this._highlightedId;
     if (!hl) return;
     const cellPx = canvasMap.CELL_PX;
     const booth = this._booths.find((item) => item.id === hl);
     if (!booth) return;
-    const x = Math.floor(booth.mapX) * cellPx;
-    const y = Math.floor(booth.mapY) * cellPx;
+    const point = getBoothRenderPoint(booth);
+    const x = point.x - cellPx / 2;
+    const y = point.y - cellPx / 2;
     ctx.save();
     ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
     ctx.fillRect(x + 2, y + 2, cellPx - 4, cellPx - 4);
@@ -452,16 +691,25 @@ export class CustomMap {
   getBoothScreenRect(id) {
     const b = this._booths.find((x) => x.id === id);
     if (!b) return null;
-    return this.getPointScreenRect(b.mapX, b.mapY, 0.55);
+    const point = getBoothRenderPoint(b);
+    return this.getPointScreenRect(point.x / canvasMap.CELL_PX, point.y / canvasMap.CELL_PX, 0.55);
+  }
+
+  getBoothMapPoint(id) {
+    const booth = this._booths.find((item) => item.id === id);
+    if (!booth) return null;
+    const point = getBoothRenderPoint(booth);
+    return { x: point.x / canvasMap.CELL_PX, y: point.y / canvasMap.CELL_PX };
   }
 
   getBoothLocalCenter(id) {
     const b = this._booths.find((x) => x.id === id);
     if (!b) return null;
     const vp = this._viewport || { scale: 1, x: 0, y: 0 };
+    const point = getBoothRenderPoint(b);
     return {
-      x: b.mapX * canvasMap.CELL_PX * vp.scale + vp.x,
-      y: b.mapY * canvasMap.CELL_PX * vp.scale + vp.y,
+      x: point.x * vp.scale + vp.x,
+      y: point.y * vp.scale + vp.y,
     };
   }
 
@@ -474,8 +722,22 @@ export class CustomMap {
   }
 
   destroy() {
+    const h = this._h;
+    if (h) {
+      const root = this.root;
+      root.removeEventListener('touchstart', h.touchstart);
+      root.removeEventListener('touchmove', h.touchmove);
+      root.removeEventListener('touchend', h.touchend);
+      root.removeEventListener('touchcancel', h.touchcancel);
+      root.removeEventListener('mousedown', h.mousedown);
+      window.removeEventListener('mousemove', h.mousemove);
+      window.removeEventListener('mouseup', h.mouseup);
+      root.removeEventListener('wheel', h.wheel);
+      this._h = null;
+    }
     window.removeEventListener('resize', this._onResize);
-    this._pointers.clear();
+    clearTimeout(this._moveTimer);
     this._gesture = null;
+    this._mouseDown = false;
   }
 }

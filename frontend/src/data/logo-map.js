@@ -31,6 +31,7 @@ for (const [path, url] of Object.entries(logoFiles)) {
 /** 名称与文件名对不上的社团：社团名 → 规范化后的文件名（人工确认） */
 const ALIASES = {
   'CP食研社': '食研社', // 文件 1食研社.jpg
+  'CP 食研社': '食研社',
   'English Animation 英语动画社': 'English Animator', // 13English Animator.png（Animator≠Animation）
   'Lg足球社': '足球', // 33足球.jpg
   '2Tired骑行社': '骑行', // 43骑行.png
