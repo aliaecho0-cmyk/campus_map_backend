@@ -101,6 +101,7 @@
   --z-tut: 9999;
   --z-toast: 10000;
   --z-modal: 10001;
+  --z-startup: 11000;
   --safe-b: env(safe-area-inset-bottom, 0px);
 }
 
@@ -453,8 +454,11 @@ button {
   height: 100%;
   overflow: hidden;
   background: transparent;
+  touch-action: none; /* 手势由 JS 接管，禁止宿主滚动/缩放抢走 */
+  user-select: none;
 }
 .map-canvas {
+  image-rendering: pixelated;
   position: absolute;
   left: 0;
   top: 0;

@@ -123,6 +123,174 @@
   background: #e5b5f1;
 }
 
+/* ===== 首次进入：从掌机外壳推进到地图页 ===== */
+.startup-intro {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-startup);
+  overflow: hidden;
+  background: #2a1c3d;
+  opacity: 1;
+  transition: opacity 180ms linear;
+  touch-action: none;
+}
+
+.startup-intro.is-leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.startup-intro__viewport {
+  position: relative;
+  width: min(100%, 430px);
+  height: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(0deg, rgba(229, 181, 241, 0.04) 0 1px, transparent 1px 4px),
+    #2a1c3d;
+}
+
+.startup-intro__anchor {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, calc(100vh * 0.5628));
+  width: max(100%, calc(100dvh * 0.5628));
+  aspect-ratio: 941 / 1672;
+  transform: translate(-50%, -50%);
+}
+
+.startup-intro.is-playing .startup-intro__anchor {
+  animation: startup-screen-focus 2.62s cubic-bezier(0.66, 0, 0.18, 1) forwards;
+}
+
+.startup-intro__device {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transform: scale(1);
+  transform-origin: 46.4% 43.2%;
+  will-change: transform, opacity;
+}
+
+.startup-intro.is-playing .startup-intro__device {
+  animation: startup-device-push 2.62s cubic-bezier(0.66, 0, 0.18, 1) forwards;
+}
+
+.startup-intro__console {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  image-rendering: auto;
+  user-select: none;
+  pointer-events: none;
+}
+
+.startup-intro__screen {
+  position: absolute;
+  left: 17.5%;
+  top: 15.25%;
+  z-index: 3;
+  width: 57.4%;
+  height: 55.85%;
+  display: grid;
+  grid-template-rows: 8% 1fr 8%;
+  overflow: hidden;
+  color: #2f2438;
+  background: #eeeaf3;
+  border-radius: 1.4%;
+  box-shadow: inset 0 0 0 2px #2f2438;
+}
+
+.startup-intro__screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(47, 36, 56, 0.06) 0 1px,
+    transparent 1px 3px
+  );
+}
+
+.startup-intro__preview-head,
+.startup-intro__preview-nav {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  font-family: var(--font-px);
+  font-size: clamp(3px, 1.1vw, 5px);
+  letter-spacing: 0.08em;
+  background: #eef1ee;
+}
+
+.startup-intro__preview-head {
+  justify-content: space-between;
+  padding: 0 5%;
+  border-bottom: 1px solid #2f2438;
+}
+
+.startup-intro__preview-head i {
+  width: 4%;
+  aspect-ratio: 1;
+  background: #925cd1;
+}
+
+.startup-intro__map {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
+.startup-intro__preview-nav {
+  justify-content: space-around;
+  border-top: 1px solid #2f2438;
+}
+
+.startup-intro__preview-nav .is-current {
+  color: #925cd1;
+}
+
+@keyframes startup-device-push {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  13% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  44% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(var(--startup-zoom, 2.1));
+  }
+}
+
+@keyframes startup-screen-focus {
+  0%, 44% {
+    transform: translate(-50%, -50%);
+  }
+  100% {
+    transform: translate(-46.4%, -43.2%);
+  }
+}
+
 /* ===== 减少动态：全局静止 ===== */
 @media (prefers-reduced-motion: reduce) {
   *,

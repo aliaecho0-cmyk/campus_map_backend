@@ -234,15 +234,24 @@
   flex: 1;
   min-height: 0;
   margin: 0 8px 8px;
-  border: var(--px-border-w) solid var(--px-border);
-  border-radius: var(--border-radius-lg);
+  border: 30px solid transparent;
+  border-width: 30px 14px 18px;
+  border-image-source: url('../../地图相关素材/地图边框参考.jpg');
+  border-image-slice: 58 46 48 46;
+  border-image-width: 30px 14px 18px;
+  border-image-repeat: stretch;
+  background: #30164f;
+  border-radius: 0;
   overflow: hidden;
-  box-shadow: 4px 4px 0 var(--px-shadow);
+  box-shadow: 4px 4px 0 #211332;
 }
 .map-legend {
   position: absolute;
   left: 10px;
-  top: 10px;
+  bottom: 10px;
+  display: flex;
+  gap: 10px;
+  pointer-events: none; /* 别吃掉左上角的拖动 */
   background: var(--bg-color-white);
   border: var(--px-border-w) solid var(--px-border);
   border-radius: 0;
@@ -264,13 +273,14 @@
   box-sizing: border-box;
 }
 .dot.booth {
-  background: var(--pal-deep);
+  background: #d99d83;
+  border: 1px solid #49314f;
 }
 .dot.landscape {
-  background: var(--pal-lilac);
+  background: #4f8c78;
 }
 .dot.activity {
-  background: var(--px-ink-faint);
+  background: #9a7c9c;
 }
 
 /* ---------- 摊位气泡 ---------- */
