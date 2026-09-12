@@ -3,12 +3,14 @@
  *
  * - 路由：#/staff/redeem
  * - 只有 localStorage.user_role === 'staff' 可访问；否则提示无权并跳回主页
+ * - 显示名以 /api/auth/me 为准，不读 localStorage.auth_user（该值可能已过期：
+ *   工作人员被移出白名单后，本地缓存仍留着旧姓名）
  * - 用 html5-qrcode 扫码，扫到 claimToken 自动调 redeemClaimToken
  * - 核销成功后 3 秒自动恢复扫码状态；页面销毁时停止摄像头
  */
 import './staff.css';
 import { Html5Qrcode } from 'html5-qrcode';
-import { redeemClaimToken } from '../services/api.js';
+import { redeemClaimToken, getMe, clearAuthToken } from '../services/api.js';
 
 const USER_ROLE_KEY = 'user_role';
 const USER_KEY = 'auth_user';
@@ -22,17 +24,14 @@ function lsGet(key) {
   }
 }
 
-function isStaffRole() {
-  return lsGet(USER_ROLE_KEY) === 'staff';
+function lsRemove(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch {}
 }
 
-function staffName() {
-  try {
-    const u = JSON.parse(lsGet(USER_KEY));
-    return u ? (u.name || u.id || '') : '';
-  } catch {
-    return '';
-  }
+function isStaffRole() {
+  return lsGet(USER_ROLE_KEY) === 'staff';
 }
 
 function escapeHtml(s) {
@@ -48,6 +47,7 @@ class StaffRedeemPage {
     this.scanner = null;
     this.busy = false;
     this.timer = null;
+    this.identityInvalid = false;
 
     if (!isStaffRole()) {
       container.innerHTML = '<div class="page staff-page"><div class="staff-msg">无权访问，即将返回主页</div></div>';
@@ -59,18 +59,48 @@ class StaffRedeemPage {
 
     container.innerHTML = `
       <div class="page staff-redeem">
-        <div class="redeem-staff">工作人员：${escapeHtml(staffName() || '—')}</div>
+        <div class="redeem-staff">工作人员：<span class="redeem-staff-name">…</span></div>
         <div class="redeem-scan"><div id="qr-reader"></div></div>
         <div class="redeem-result"></div>
       </div>`;
 
+    this.nameEl = container.querySelector('.redeem-staff-name');
     this.result = container.querySelector('.redeem-result');
+    this.loadIdentity();
     this.startScanner();
     return this;
   }
 
+  /** 显示名取后端权威值（GET /api/auth/me，返回 { id, role }，id 即工作人员姓名）。 */
+  async loadIdentity() {
+    try {
+      const me = await getMe();
+      if (this.destroyed) return;
+      if (this.nameEl) this.nameEl.textContent = (me && me.id) || '—';
+    } catch (e) {
+      if (this.destroyed) return;
+      this.handleIdentityInvalid();
+    }
+  }
+
+  /**
+   * token 已失效（如工作人员被移出白名单，getCurrentUser 实时复查会返回 null）。
+   * 清掉本地过期身份，停止扫码并回主页，避免继续用旧姓名做核销。
+   */
+  handleIdentityInvalid() {
+    this.identityInvalid = true;
+    clearAuthToken();
+    lsRemove(USER_KEY);
+    lsRemove(USER_ROLE_KEY);
+    this.showResult('登录已失效，即将返回主页，请重新用工作台链接进入', false);
+    this.stopScanner();
+    this.timer = setTimeout(() => {
+      if (!this.destroyed) location.hash = '#/map';
+    }, 2500);
+  }
+
   async startScanner() {
-    if (this.destroyed) return;
+    if (this.destroyed || this.identityInvalid) return;
     if (!this.scanner) {
       if (!this.el.querySelector('#qr-reader')) return;
       this.scanner = new Html5Qrcode('qr-reader');
@@ -85,12 +115,29 @@ class StaffRedeemPage {
     } catch (e) {
       if (this.destroyed) return;
       this.showResult('无法启动摄像头，请检查权限或使用 HTTPS/localhost', false);
+      return;
     }
+    // start() 期间身份可能已被判定失效
+    if (this.identityInvalid || this.destroyed) this.stopScanner();
+  }
+
+  /** 停止并释放摄像头（幂等）。 */
+  stopScanner() {
+    if (!this.scanner) return;
+    const sc = this.scanner;
+    this.scanner = null;
+    Promise.resolve(sc.stop())
+      .then(() => {
+        try {
+          sc.clear();
+        } catch {}
+      })
+      .catch(() => {});
   }
 
   /** 扫到 claimToken → 停止解码 → 核销 → 3 秒后恢复 */
   async onScan(token) {
-    if (this.destroyed || this.busy) return;
+    if (this.destroyed || this.busy || this.identityInvalid) return;
     this.busy = true;
     try {
       if (this.scanner) this.scanner.pause();
@@ -102,6 +149,11 @@ class StaffRedeemPage {
       this.showResult('核销成功', true);
     } catch (e) {
       if (this.destroyed) return;
+      if (e && (e.code === 'AUTH_REQUIRED' || e.code === 'INVALID_TOKEN' || e.code === 'STAFF_REQUIRED')) {
+        this.busy = false;
+        this.handleIdentityInvalid();
+        return;
+      }
       this.showResult((e && e.message) || '核销失败，请重试', false);
     }
     this.busy = false;
@@ -127,17 +179,7 @@ class StaffRedeemPage {
   destroy() {
     this.destroyed = true;
     if (this.timer) clearTimeout(this.timer);
-    if (this.scanner) {
-      const sc = this.scanner;
-      this.scanner = null;
-      Promise.resolve(sc.stop())
-        .then(() => {
-          try {
-            sc.clear();
-          } catch {}
-        })
-        .catch(() => {});
-    }
+    this.stopScanner();
     this.el.innerHTML = '';
   }
 }
