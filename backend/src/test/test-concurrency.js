@@ -15,7 +15,7 @@
 //
 // 环境变量：
 //   BASE_URL        后端地址，默认 http://127.0.0.1:3001
-//   DATABASE_PATH   副本库路径，默认 <脚本目录>/database.test.db
+//   DATABASE_PATH   副本库路径，默认 backend 根目录/database.test.db
 //   STAFF_CODE      工作人员识别码，默认 staff2026
 //   STAFF_NAME      白名单内的姓名，默认 王怡雪
 //   CONC_NON_BROWSE 非浏览接口并发数，默认 50
@@ -34,9 +34,10 @@ import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const BACKEND_ROOT = path.resolve(__dirname, '..', '..');
 const DB_PATH = process.env.DATABASE_PATH
-  ? path.resolve(__dirname, process.env.DATABASE_PATH)
-  : path.join(__dirname, 'database.test.db');
+  ? path.resolve(BACKEND_ROOT, process.env.DATABASE_PATH)
+  : path.join(BACKEND_ROOT, 'database.test.db');
 const BASE_URL = (process.env.BASE_URL || 'http://127.0.0.1:3001').replace(/\/$/, '');
 const STAFF_CODE = process.env.STAFF_CODE || 'staff2026';
 const STAFF_NAME = process.env.STAFF_NAME || '王怡雪';

@@ -8,7 +8,7 @@
 // 环境变量：
 //   BASE_URL    后端地址，默认 http://localhost:3000
 //   STAFF_CODE  工作人员识别码，默认 staff2026
-//   DATABASE_PATH  数据库文件路径，默认 <脚本目录>/database.db
+//   DATABASE_PATH  数据库文件路径，默认 backend 根目录/database.db
 //
 // 说明：
 //   - 每一步打印 ✅/❌ 并显示关键数据；某步失败不会中断后续步骤。
@@ -22,9 +22,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const BACKEND_ROOT = path.resolve(__dirname, '..', '..');
 const DB_PATH = process.env.DATABASE_PATH
-  ? path.resolve(__dirname, process.env.DATABASE_PATH)
-  : path.join(__dirname, 'database.db');
+  ? path.resolve(BACKEND_ROOT, process.env.DATABASE_PATH)
+  : path.join(BACKEND_ROOT, 'database.db');
 const BASE_URL = (process.env.BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
 const STAFF_CODE = process.env.STAFF_CODE || 'staff2026';
 const STAFF_NAME = '张三';
