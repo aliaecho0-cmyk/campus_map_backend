@@ -1,4 +1,4 @@
-# DEPLOY.md
+# DEPLOY.md（补全版）
 
 > 百团大战活动系统 · 部署与运维记录
 > 最后更新：2026-09-12
@@ -124,9 +124,10 @@ curl -i localhost:3001
 ### 3.2 前端部署流程
 
 ```bash
-# 本地：build（注意 VITE_API_BASE= 空串前缀）
+# 本地：build
 cd frontend
-VITE_API_BASE= npm run build
+npm run build
+# 自动读 .env.production（VITE_API_BASE= 空串）
 
 # 本地：上传到服务器临时目录
 scp -r dist root@47.76.221.148:/tmp/club-map-new
@@ -143,15 +144,21 @@ mv /tmp/club-map-new /var/www/club-map
 ls -la /var/www/club-map
 ```
 
-**为什么 build 命令必须带 `VITE_API_BASE=`**：
-见 `frontend/src/services/api.js`——请求路径本身已带 `/api` 前缀，需让 `BASE_URL` 为空、走同源 `/api`，避免 `/api` 前缀重复。不带这个前缀，build 产物的 API 路径会出错。
+**为什么 `.env.production` 里 `VITE_API_BASE=` 是空串**：
+见 `frontend/src/services/api.js`——请求路径本身已带 `/api` 前缀，需让 `BASE_URL` 为空、走同源 `/api`，避免 `/api` 前缀重复。
 
 **为什么整目录替换**：
 前端 build 是全量快照，增量覆盖会残留旧 assets，导致「新 HTML 引用已删的旧 JS」或「旧 JS 残留但不被引用」。
 
+**前端环境变量文件**：
+- `.env.development`：`VITE_API_BASE=http://localhost:3000`（开发时直连本地后端）
+- `.env.production`：`VITE_API_BASE=`（构建时置空，走同源相对路径）
+- Vite 按 `mode` 自动读取（`npm run dev` 读 development，`npm run build` 读 production）
+
 **前端 API 层（frontend/src/services/api.js）**：
-- 开发（不设 `VITE_API_BASE`）：`BASE_URL = 'http://localhost:3000'`，直连本地后端（靠后端 CORS 允许跨域）
-- 生产（`VITE_API_BASE=` 空串）：`BASE_URL = ''`，请求走 `/api/...` 相对路径，由 Nginx 反代
+- 开发：`BASE_URL = 'http://localhost:3000'`，直连本地后端（靠后端 CORS 允许跨域）
+- 生产：`BASE_URL = ''`，请求走 `/api/...` 相对路径，由 Nginx 反代
+- 未使用 Vite 代理（`server.proxy` 未配置）
 
 **前端构建配置（vite.config.js）**：
 - `base: './'`：资源用相对路径，不写死域名
@@ -253,13 +260,11 @@ server {
 - `location /assets/`：带 hash 资源长缓存；**此 location 无 try_files，缺失 asset 天然返回 404，不会伪装成 HTML**
 - `location /`：SPA 回退（`try_files ... /index.html`），仅对非 assets、非 api 路径生效
 
-**缓存策略作用**：防止用户缓存旧 `index.html`，引用已删的旧 bundle 导致白屏。
-
 **已实测生效**：
 - `GET /` → `cache-control: no-cache, no-store, must-revalidate`
 - `GET /assets/*.js` → `cache-control: public, max-age=31536000, immutable`
 - `CF-Cache-Status: DYNAMIC`（Cloudflare 不缓存，直接回源）
-- 缺失 asset 返回 404（不再伪装 200 HTML）
+- 缺失 asset 返回 404
 
 ### 5.2 后端绑定地址（server.js）
 
@@ -301,7 +306,7 @@ app.listen(PORT, HOST, () => {
 - **是** → `127.0.0.1`
 - **否** → `0.0.0.0`（或按上表选）
 
-⚠️ **换服务器时不一定要改**：只要新服务器架构是「Nginx + Node 同机」，还是 `127.0.0.1`。架构不同才需要按上表选。
+⚠️ **换服务器时不一定要改**：只要新服务器架构是「Nginx + Node 同机」，还是 `127.0.0.1`。
 
 ### 5.3 环境变量（.env）
 
@@ -309,7 +314,7 @@ app.listen(PORT, HOST, () => {
 | 变量 | 值 |
 |---|---|
 | JWT_SECRET | `<redacted>` |
-| STAFF_CODE | staff2026 |
+| STAFF_CODE | `<redacted>` |
 | PORT | 3001 |
 | NODE_ENV | production |
 
@@ -318,17 +323,57 @@ app.listen(PORT, HOST, () => {
 |---|---|---|
 | HOST | 127.0.0.1 | 只绑本机 |
 
-⚠️ **`.env` 不进 git，不在文档里明文记录敏感值。**
-
 **本地 `.env`**：
 | 变量 | 值 |
 |---|---|
 | JWT_SECRET | `<redacted>` |
-| STAFF_CODE | `<redacted>`（见 .env，风险已接受） |
+| STAFF_CODE | `<redacted>` |
 | PORT | 3000 |
 | NODE_ENV | development |
 
 本地无 `HOST`，`server.js` 兜底 `0.0.0.0`。
+
+⚠️ **敏感值（`JWT_SECRET`、`STAFF_CODE`）不在此文档记录，见各环境 `.env`。**
+注：`STAFF_CODE` 当前为默认值 `staff2026`，风险已接受（一日活动，不更换）。
+
+### 5.4 CORS 配置
+
+**当前状态**：`Access-Control-Allow-Origin: *`（允许所有来源）。
+
+**正式上线时建议收紧**：
+```js
+app.use(cors({
+  origin: 'https://你的正式域名',
+}));
+```
+
+**说明**：
+- 生产环境前端与后端同源（都走 Nginx），严格说 CORS 可以完全关掉
+- 但当前用 `*` 是为了兼容开发和 trycloudflare 临时域名
+- 换成正式域名后，应收紧到具体域名
+
+**当前决策**：保持 `*`（临时活动、简化配置）。活动结束后无需处理。
+
+### 5.5 数据库
+
+**文件**：`/root/backend/database.db`（SQLite）
+
+**备份**：
+- 部署前手动备份（见第 3.1 节）
+- 当前无自动定期备份（已知限制，见第 8 节）
+
+**初始化 / 迁移**：
+- ⚠️ 待确认：是否有迁移脚本（如 `run-migration.js`）？
+- ⚠️ 待确认：schema 如何初始化？是否有 `initial_schema.sql`？
+
+**员工白名单**：
+- ⚠️ 待确认：白名单表名、如何导入
+
+**建议**（如将来需要自动备份）：
+```bash
+# 每天凌晨 3 点备份
+0 3 * * * cp /root/backend/database.db /root/backend/backups/database-$(date +\%Y\%m\%d).db
+```
 
 ---
 
@@ -391,6 +436,8 @@ curl -m 5 http://47.76.221.148:3001                    # Connection refused
 | **无监控** | 服务挂了没有主动告警 | 需人工定期检查 |
 | **无自动备份** | 数据库备份靠手动 | 数据丢失风险 |
 | **本地/服务器 server.js 不一致** | 服务器硬编码，本地环境变量版 | 下次部署需统一 |
+| **CORS 仍为 `*`** | 未收紧到具体域名 | 当前可接受；正式域名后应改 |
+| **前端 eventId 写死** | 后端无接口返回 eventId，前端只能写死 1 | 多届时需改（详见 test.md） |
 
 ---
 
@@ -399,12 +446,14 @@ curl -m 5 http://47.76.221.148:3001                    # Connection refused
 - [ ] **统一 server.js**：本地与服务器都改为环境变量版
 - [ ] 改成 **Named Tunnel**（固定域名），根治二维码失效问题
 - [ ] 配 **正式域名 + HTTPS**（Let's Encrypt 或 Cloudflare 证书）
+- [ ] **CORS 收紧**到正式域名
 - [ ] 加 **`/ready` 探针 + 启动时 schema 校验**
 - [ ] 加 **JSON 兜底 404 中间件**
 - [ ] 加 **监控告警**（如 UptimeRobot 免费方案）
 - [ ] 加 **数据库定期自动备份**
 - [ ] 把服务器代码**纳入 git 管理**，实现真正的 `git pull` 部署
 - [ ] 评估**最终服务器规格**（当前 2核4G 是否够，取决于活动规模）
+- [ ] 确认 **DB 迁移 / schema 初始化 / 白名单导入** 流程（见第 5.5 节）
 
 ---
 
@@ -471,6 +520,18 @@ SELECT * FROM <表名> LIMIT 10;
 | Nginx 配置 | /etc/nginx/conf.d/club-map.conf |
 | 前端构建配置 | frontend/vite.config.js |
 | 前端 package.json | frontend/package.json |
+| 前端环境变量 | frontend/.env.development、frontend/.env.production |
+
+---
+
+## 13. 待确认项（补全文档用）
+
+以下内容需要你核实后补充：
+
+1. **数据库迁移 / schema 初始化**：有没有 `run-migration.js`、`initial_schema.sql`？怎么跑？
+2. **员工白名单**：表名是什么？怎么导入？（SQL 还是脚本？）
+3. **正式 HTTPS 方案**：下次上线用 Let's Encrypt 还是 Cloudflare 证书？
+4. **日志轮转配置**：pm2-logrotate 的具体配置（保留多久、多大）？
 
 ---
 

@@ -5,8 +5,9 @@
 > 约定：每步记录统一用「测什么 / 怎么测 / 测试结果 / 发现的问题 / 做了什么修改 / 修改后复测结果」六段式。
 
 ---
+## 已知限制 / 接受的风险 / 设计债
 
-## 已知限制 / 接受的风险
+### 简短条目
 
 - **STAFF_CODE 仍为默认值 `staff2026`（接受）**：一日活动，不更换口令、也不加默认值拦截。任何知道 `staff2026` 且姓名在白名单内的人均可登录 staff，此风险已接受。
   - 保留的兜底：`backend/src/server.js` 启动前校验 `STAFF_CODE`/`JWT_SECRET` 缺失或为空即 `process.exit(1)`；`backend/src/services/authService.js` `staffLogin` fail-closed（识别码未配置或不等即 `AUTH_REQUIRED`）。
@@ -32,6 +33,38 @@
   - 影响：前端 `res.json()` 解析 HTML 失败，可能误判为「网络错误」。
   - 当前规避：无（不影响现有 API 正确性）。
   - 后续方案：在所有路由之后加 `app.use((req,res)=>res.status(404).json({error:'Not Found'}))`。
+
+- **启动校验不检查 JWT_SECRET 是否为占位符（已知限制）**：
+  - 现状：`server.js` 启动时只校验 `JWT_SECRET` 非空，不校验其是否为已知占位符（如 `replace-with-...`）或是否足够随机。
+  - 当前安全性：`JWT_SECRET` 为真随机值（64 位 hex），此缺口不触发。
+  - 潜在风险：若将来误用占位符（如复制 `.env.example` 没改），服务会照常启动，且 token 可被伪造。
+  - 缓解（可选）：启动时额外校验 `JWT_SECRET` 长度 ≥ 32 或匹配 `/^[0-9a-f]{64}$/`。
+  - 结论：当前先不处理。
+
+### 设计债：前端 eventId 写死
+
+**现象**：前端调用 `recordBoothView` 时，`eventId` 写死为 `1`。
+
+**根因**：后端 8 个接口没有一个返回 `eventId`。连 `eventEndAt` 都返回了，偏偏没返回 `eventId`。前端拿不到，只能写死。
+
+**后端侧 eventId 是必要的**：
+- `badges` 唯一约束 `(event_id, code)`
+- `booth_view_records` 唯一约束 `(event_id, device_id, booth_id)`
+- 没有它，多届时集章数据会跨届串
+
+**已埋的不一致**：
+- 登录校验：`getCurrentEvent()` → 「最新 active 活动」
+- 浏览校验：URL 里的 `eventId`
+- 今天单活动都是 1，看不出问题
+- 将来出现第二条 active 活动 → 登录认 event 2，前端还 POST `/events/1/...` → `409 EVENT_NOT_ACTIVE` → 用户「点了没反应」
+
+**当前决策**：不修。单活动 + 已上线 + 二维码已发出，写死 1 当前正确且安全。
+
+**将来办第二届时**：
+- 最小改动：让登录响应或 `/api/auth/me` 带上 `eventId`
+- 前端从登录结果取，不再写死
+- 后端 `recordView` 那套不用动
+- ⚠️ 要改的不只是前端那个常量
 
 ---
 
@@ -83,7 +116,7 @@
   - HTTP：`POST /api/auth/staff` 不带 code + `name=张三` → `401 AUTH_REQUIRED`。
   - 对照：`STAFF_CODE=staff2026` + 正确 code + 张三 → 返回 `role=staff`（未误杀正常登录）。
 - **发现的问题**：
-  - 主问题已修复。顺带观察到 HTTP 401 响应体带 `stack`（`NODE_ENV=development` 泄露堆栈），归入 1c 处理。
+  - 主问题已修复。顺带观察到 HTTP 401 响应体带 `stack`（`NODE_ENV=development` 泄露堆栈），归入 1b 处理。
   - `STAFF_CODE` 仍为默认值 `staff2026`，已记入「已知限制 / 接受的风险」。
 - **做了什么修改**：
   - `backend/src/server.js`：`listen` 前新增校验，`STAFF_CODE`/`JWT_SECRET` 缺失或为空时 `console.error` 并 `process.exit(1)`。
@@ -92,23 +125,7 @@
 
 ---
 
-### 1b. JWT_SECRET 为占位值时 token 可被伪造
-
-- **测什么**：把 `JWT_SECRET` 临时设为已知占位符后，攻击者用该已知密钥自签 token 能否通过校验。
-- **怎么测的**：
-  1. `cd backend`，临时把 `.env` 的 `JWT_SECRET` 改成 `replace-with-a-32-byte-hex-string`，重启。
-  2. 自签 student token 并请求受保护接口（一条命令，需在 backend 目录下用已装的 jsonwebtoken）：
-     `node -e "const jwt=require('jsonwebtoken'); const t=jwt.sign({sub:'dev_1700000000_ABCDEF12',role:'student',exp:Math.floor(Date.now()/1000)+3600},'replace-with-a-32-byte-hex-string',{algorithm:'HS256'}); fetch('http://localhost:3000/api/auth/me',{headers:{Authorization:'Bearer '+t}}).then(r=>r.text()).then(console.log)"`
-  3. 恢复真实 `JWT_SECRET`，重启，重复上一步（应 401 INVALID_TOKEN）。
-- **测试结果**：待测
-- **发现的问题**：待补
-- **做了什么修改**：
-  - `backend/src/server.js`：启动校验中一并要求 `JWT_SECRET` 非空，缺失直接 `process.exit(1)`（与 1a 同一条改动覆盖）。
-- **修改后复测结果**：待补
-
----
-
-### 1c. NODE_ENV=development 时错误堆栈泄露
+### 1b. NODE_ENV=development 时错误堆栈泄露
 
 - **核查结论（静态代码检查）**：`NODE_ENV=production` 时堆栈泄露面为 0。`errorHandler.js` 是唯一错误出口，`isDev = NODE_ENV === 'development'`（`errorHandler.js:49`）；只有 `:56`/`:63` 两处向响应体写 `err.stack`，均被 `isDev` 闸住。`NODE_ENV` 全项目只在 `errorHandler.js:49` 读一次；其余 8 处 `res.json` 全为成功路径、异常统一 `next(err)`；未映射错误响应体为硬编码 `INTERNAL_SERVER_ERROR`（不含 `err.message`）。未设 `NODE_ENV`（`undefined !== 'development'`）同样不泄露。**代码无需改动。**
 - **附带边角（不阻塞上线）**：
@@ -162,7 +179,7 @@
   1. `boothId` **无长度上限、无字符集/存在性校验**（与 `docs/api.md` 声称「长度上限宽松校验」不一致）：5000 字符、`../`、null 字节均实测 200 入账并计奖。配合「无 booths 表」，任何非空字符串都能刷满 knowitall——**接口可刷 20 个任意摊位解锁，无需真正逛摊**。
   2. `eventId` 走 `Number()` 宽松解析：`"1.0"`→活动 1、`"1e3"`/`"0x10"`→整数。非安全漏洞（仍须匹配真实活动），但解析比预期宽松。
   3. `code`/`name` 无长度上限，但仅导致 401（不崩溃、不绕过），影响可忽略。
-- **做了什么修改**：无（纯测试）。
+- **做了什么修改**：无（接受结果）。
 - **修改后复测结果**：不适用。
 
 ---
@@ -179,8 +196,8 @@
   1. `studentLogin` 只校验 deviceId 格式、不校验归属/密钥，任何合法格式的 deviceId 都能换到 token → 拿到他人 deviceId 即可完全冒充（读 reward + 明文领取码）。本质是「deviceId 即自报的 bearer 凭证，无身份绑定」。
   2. 正向：所有 `/api/me/*` 的 deviceId 均取 JWT sub、无请求参数注入点，经典参数型 IDOR 不存在。
 - **危害评估**：领取码需 staff 线下扫码核销，冒充者要兑现仍须到现场；但可窃读他人领取码并抢先核销，且 deviceId 一旦泄露（共享设备 / XSS / 日志）即全盘暴露。单日活动场景危害 **低-中**。
-- **做了什么修改**：无（纯测试）。
-- **修改后复测结果**：不适用。
+- **做了什么修改**：无。风险已接受
+- **修改后复测结果**：未修改。
 
 ---
 
@@ -198,8 +215,8 @@
   - 空 DB 服务：**正常启动**（无报错），首请求 `POST /auth/student` → **500「服务器内部错误」**（无 schema 校验、无 readiness/health）。顺带：该服务未设 `NODE_ENV`，500 响应无 stack，再次印证 1c「未设 NODE_ENV 也不泄露」。
 - **发现的问题**：
   1. `errorHandler` 只按 `err.message` 匹配错误码，body-parser 的解析错误（畸形 JSON / 超大 body / 严格模式拒绝）都带 `err.status`（400/413）但被忽略 → 一律 500。**已修复**（优先读 `err.type`/`err.status`）。
-  2. **无 readiness / schema 校验**：DB 缺失/为空时服务照常启动，首请求才 500，故障无提前暴露。
-  3. 未知路由无 JSON 404，前端拿到 HTML 可能误判为网络错误。
+  2. **无 readiness / schema 校验**：DB 缺失/为空时服务照常启动，首请求才 500，故障无提前暴露。**未修 → 见「已知限制 / 接受的风险 / 设计债」章节**。
+  3. 未知路由无 JSON 404，前端拿到 HTML 可能误判为网络错误。**未修 → 见「已知限制 / 接受的风险 / 设计债」章节**。
 - **做了什么修改**：
   - `backend/src/middleware/errorHandler.js`：错误分类改为「业务错误码（`err.message` 映射）→ body-parser 错误（`err.type`/`err.status`：`entity.too.large`→413、`entity.parse.failed` 或其它 4xx status→400）→ 兜底 500」；新增 `PAYLOAD_TOO_LARGE: 413` 与 `INTERNAL_SERVER_ERROR` 消息映射。
 - **修改后复测结果**：通过（7 例）——畸形 JSON→400、超大 body→413、body=数字→400；无 token→401、staff 错 code→401、student 坏 deviceId→400、body=数组→401（鉴权 / 业务错误不受影响）。
@@ -216,7 +233,7 @@
   - DB：`claim_tokens.status='redeemed'`（`redeemed_by=张三`）；`redemptions` 表该 `claim_token_id` 记录数 = **1**。
   - 判定：✅ 无重复核销。
 - **发现的问题**：无。三重兜底生效：`BEGIN IMMEDIATE`（`staffRedemptionService.js:47`）+ `UPDATE ... WHERE status='active'`（`claimTokenRepository.js:100`）+ `redemptions` `UNIQUE(claim_token_id)`（`initial_schema.sql:84`）。
-- **做了什么修改**：无（纯测试）。
+- **做了什么修改**：无（测试通过）。
 - **修改后复测结果**：不适用。
 
 ---
