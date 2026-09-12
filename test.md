@@ -221,6 +221,35 @@
 
 ---
 
-## 后续步骤（待补充）
+## 第七步：部署后验证（云端）
 
-<!-- 每完成一步，按上面六段式在下方追加新章节 -->
+### 7.1 服务健康
+- pm2 list：club-backend / tunnel online ✅
+- curl -i localhost:3001：404 Express（后端活着）✅
+- curl -i localhost:8080：200 HTML（前端正常）✅
+- curl -I localhost（走80）：301 → https://app.divgate.com/（另一站点，非本服务）
+
+### 7.2 完整链路（走域名）
+- curl -I https://<域名>/：cache-control: no-cache, no-store, must-revalidate ✅
+- curl -I https://<域名>/assets/*.js：public, max-age=31536000, immutable ✅
+- curl -i https://<域名>/api/auth/me：401 JSON ✅
+- CF-Cache-Status: DYNAMIC（Cloudflare 不缓存）✅
+
+### 7.3 缺失 asset
+- 请求不存在的 asset：返回 404（不再伪装 200 HTML）✅
+
+### 7.4 进程常驻
+- pm2 startup 已配 + pm2 save 已执行 ✅
+- pm2 describe tunnel：restarts=0, uptime=36h ✅
+- NODE_ENV=production ✅
+
+### 7.5 安全验证
+- 3001 对外暴露检查：外部 curl 47.76.221.148:3001 → Connection refused ✅
+- （修复前：外部能访问 → 已通过 Node 绑定 127.0.0.1 修复）
+
+### 发现的问题
+- 无新增问题
+
+### 已知限制（部署相关）
+- Quick Tunnel（cloudflared --url）：域名随机，进程重启会变 → 服务器重启后二维码可能失效
+- 无正式域名 + HTTPS，依赖 trycloudflare 临时域名

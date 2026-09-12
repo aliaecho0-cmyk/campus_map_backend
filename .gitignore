@@ -16,3 +16,6 @@ backend/.env
 # 后端工具本地目录；docs/.claude/ 属于项目文档，纳入版本控制
 backend/.claude/
 !backend/docs/.claude/
+
+# 编辑器个人配置
+.vscode/
