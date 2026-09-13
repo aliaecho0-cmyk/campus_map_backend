@@ -6,9 +6,12 @@ import { wx } from '../adapter/wx.js';
 import { state } from '../state.js';
 import * as clubSvc from '../services/club.js';
 import { startViewSession } from '../services/boothView.js';
+import { isEnglish, localizeBooth, localizeClub, statusText, t } from '../i18n.js';
 
-const CAT_KEY_MAP = { 学术: 'academic', 艺术: 'art', 体育: 'sport', 科技: 'tech', 志愿: 'volunteer' };
-const STATUS_TEXT = { open: '营业中', break: '休息中', closed: '已收摊' };
+const CAT_KEY_MAP = {
+  学术: 'academic', 艺术: 'art', 体育: 'sport', 科技: 'tech', 志愿: 'volunteer',
+  Academic: 'academic', Arts: 'art', Sports: 'sport', Technology: 'tech', Community: 'volunteer',
+};
 
 function escapeHtml(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({
@@ -22,52 +25,60 @@ class ClubDetailPage {
     this.clubId = query.clubId;
     this._destroyed = false;
     this._pageVisible = false;
-    container.innerHTML = '<div class="page club-detail-page"><div class="empty">加载中<span class="px-spin"></span></div></div>';
+    container.innerHTML = `<div class="page club-detail-page"><div class="empty">${t('loading')}<span class="px-spin"></span></div></div>`;
     this.load();
   }
 
   async load() {
-    const club = await clubSvc.getClubDetail(this.clubId);
+    const sourceClub = await clubSvc.getClubDetail(this.clubId);
     if (this._destroyed) return;
-    if (!club) {
-      this.el.innerHTML = '<div class="page club-detail-page"><div class="empty">社团不存在</div></div>';
+    if (!sourceClub) {
+      this.el.innerHTML = `<div class="page club-detail-page"><div class="empty">${t('clubMissing')}</div></div>`;
       return;
     }
+    const club = { ...localizeClub(sourceClub), booth: sourceClub.booth ? localizeBooth(sourceClub.booth) : null };
     const boothId = club.boothId || (club.booth && club.booth.id) || '';
     this._boothId = String(boothId);
     const catKey = CAT_KEY_MAP[club.category] || 'default';
     const booth = club.booth || {};
-    const intro = booth.intro || club.intro || club.slogan || '暂无简介';
+    const intro = booth.intro || club.intro || club.slogan || t('noDescription');
     const rules = booth.gameRules || '';
+    const email = booth.email || club.email || '';
 
     this.el.innerHTML = `
       <div class="page club-detail-page">
         <div class="hero">
           <div class="logo cat-${catKey}">${club.logo
             ? `<img class="logo-img" src="${escapeHtml(club.logo)}" alt="${escapeHtml(club.name)}" />`
-            : escapeHtml(club.name ? club.name[0] : '社')}</div>
+            : escapeHtml(club.name ? club.name[0] : (isEnglish() ? 'C' : '社'))}</div>
           <div class="hero-main">
             <div class="name">${escapeHtml(club.name)}</div>
             <div class="tags">
               <span class="tag cat-${catKey}">${escapeHtml(club.category)}</span>
-              ${club.boothId ? `<span class="tag tag-blue">摊位 ${escapeHtml(club.boothId)}</span>` : ''}
-              ${club.status ? `<span class="status-line"><span class="status-dot ${escapeHtml(club.status)}"></span><span class="status-text">${STATUS_TEXT[club.status] || ''}</span></span>` : ''}
+              ${club.boothId ? `<span class="tag tag-blue">${t('booth', { id: escapeHtml(club.boothId) })}</span>` : ''}
+              ${club.status ? `<span class="status-line"><span class="status-dot ${escapeHtml(club.status)}"></span><span class="status-text">${statusText(club.status)}</span></span>` : ''}
             </div>
           </div>
         </div>
 
         <div class="card">
-          <div class="section-title">社团简介</div>
+          <div class="section-title">${t('clubProfile')}</div>
           <div class="intro-text">${escapeHtml(intro)}</div>
-          ${rules ? `<div class="rules-block"><div class="section-title rules-title">游戏规则</div><div class="intro-text">${escapeHtml(rules)}</div></div>` : ''}
+          <div class="email-block">
+            <div class="section-title rules-title">${t('clubEmail')}</div>
+            ${email
+              ? `<a class="email-text" href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a>`
+              : `<div class="email-text is-missing">${t('notProvided')}</div>`}
+          </div>
+          <div class="rules-block"><div class="section-title rules-title">${t('gameRules')}</div><div class="intro-text">${escapeHtml(rules || t('notProvided'))}</div></div>
         </div>
 
         ${booth.id ? `
         <div class="card">
-          <div class="section-title">摊位位置</div>
+          <div class="section-title">${t('boothLocation')}</div>
           <div class="booth-row">
-            <div class="booth-id">摊位号 ${escapeHtml(booth.id)}</div>
-            <button class="btn-primary map-btn">地图查看</button>
+            <div class="booth-id">${t('boothNumber', { id: escapeHtml(booth.id) })}</div>
+            <button class="btn-primary map-btn">${t('mapView')}</button>
           </div>
         </div>` : ''}
       </div>`;
@@ -108,7 +119,7 @@ class ClubDetailPage {
 }
 
 export default {
-  title: '社团详情',
+  title: () => t('clubDetails'),
   mount(c, q) {
     const page = new ClubDetailPage();
     page.mount(c, q);

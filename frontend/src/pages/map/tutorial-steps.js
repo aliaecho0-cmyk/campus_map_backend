@@ -1,26 +1,77 @@
-/** pages/map/tutorial-steps.js — 新手指引步骤配置（web 版） */
-const TUTORIAL_KEY = 'campus_map_tutorial_v1_completed';
-const EXAMPLE_BOOTH_ID = '20';
-const SOCIAL_UNION = { mapX: 12, mapY: 20 };
+/** pages/map/tutorial-steps.js — 首页五步游戏化新手指引。 */
+import { isEnglish } from '../../i18n.js';
 
-const STEPS = [
-  { key: 'union_location', target: 'socialUnion', message: '参加活动前，请先到社联处领取活动手册和小扇子～', button: '下一步' },
-  { key: 'club_marker', target: 'clubMarker', message: '点击地图上的浅绿色摊位格，可以查看该社团的具体活动信息。', button: '下一步' },
-  { key: 'club_popup', target: 'clubPopup', message: '活动时间、地点和活动介绍都会显示在这里。', button: '下一步' },
-  { key: 'tab_map', target: 'tabMap', message: '在“地图”中查看社团摊位的位置和分布。', button: '下一步' },
-  { key: 'tab_club', target: 'tabClub', message: '在“社团”中浏览所有参展社团。', button: '下一步' },
-  { key: 'tab_activity', target: 'tabActivity', message: '在“活动”中查看百团大战期间的精彩活动。', button: '完成' },
+const TUTORIAL_KEY = 'onboardingCompleted';
+const EXAMPLE_BOOTH_ID = '69';
+
+const STEPS_ZH = [
+  {
+    key: 'club_marker',
+    target: 'clubMarker',
+    title: '发现社团',
+    message: '点击地图上的社团摊位，就可以快速查看这个社团的信息！',
+  },
+  {
+    key: 'music_player',
+    target: 'musicPlayer',
+    title: '背景音乐',
+    message: '音乐默认会自动播放。点击右下角音乐盒，可以暂停或继续播放音乐。',
+  },
+  {
+    key: 'club_search',
+    target: 'searchField',
+    title: '寻找社团',
+    message: '有想找的社团？在这里搜索你感兴趣的社团吧！',
+  },
+  {
+    key: 'tab_club',
+    target: 'tabClub',
+    title: '社团详情',
+    message: '点击「社团」，可以浏览社团列表并查看更详细的社团信息。',
+  },
+  {
+    key: 'tab_activity',
+    target: 'tabActivity',
+    title: '今日活动',
+    message: '点击「活动」，就能看看今天有哪些活动正在开展！',
+  },
 ];
 
-const STATE = {
-  INACTIVE: 'inactive',
-  UNION_LOCATION: 'union_location',
-  CLUB_MARKER: 'club_marker',
-  CLUB_POPUP: 'club_popup',
-  TAB_MAP: 'tab_map',
-  TAB_CLUB: 'tab_club',
-  TAB_ACTIVITY: 'tab_activity',
-  COMPLETED: 'completed',
-};
+const STEPS_EN = [
+  {
+    key: 'club_marker',
+    target: 'clubMarker',
+    title: 'Discover Clubs',
+    message: 'Tap a club booth on the map to quickly view information about that club.',
+  },
+  {
+    key: 'music_player',
+    target: 'musicPlayer',
+    title: 'Background Music',
+    message: 'Music plays automatically. Tap the player at the bottom right to pause or resume it.',
+  },
+  {
+    key: 'club_search',
+    target: 'searchField',
+    title: 'Find a Club',
+    message: 'Looking for a club? Search for one you are interested in here.',
+  },
+  {
+    key: 'tab_club',
+    target: 'tabClub',
+    title: 'Club Details',
+    message: 'Tap Clubs to browse the full list and view more information.',
+  },
+  {
+    key: 'tab_activity',
+    target: 'tabActivity',
+    title: 'Today’s Events',
+    message: 'Tap Events to see what is happening today.',
+  },
+];
 
-export { TUTORIAL_KEY, EXAMPLE_BOOTH_ID, SOCIAL_UNION, STEPS, STATE };
+function getSteps() {
+  return (isEnglish() ? STEPS_EN : STEPS_ZH).map((step) => ({ ...step }));
+}
+
+export { TUTORIAL_KEY, EXAMPLE_BOOTH_ID, getSteps };

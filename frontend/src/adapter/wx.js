@@ -2,6 +2,7 @@
  * adapter/wx.js — 微信小程序 API 的浏览器垫片（仅覆盖本 web 版用到的子集）
  * 页面通过 `import { wx } from '../adapter/wx.js'` 使用，语义与原 wx.* 对齐。
  */
+import { t } from '../i18n.js';
 
 const storage = {
   get(key) {
@@ -63,8 +64,9 @@ function showModal({
   title = '',
   content = '',
   showCancel = true,
-  confirmText = '确定',
-  cancelText = '取消',
+  confirmText = t('confirm'),
+  cancelText = t('cancel'),
+  maskClosable = true,
   success,
 } = {}) {
   return new Promise((resolve) => {
@@ -106,7 +108,7 @@ function showModal({
     confirmBtn.addEventListener('click', () => finish({ confirm: true, cancel: false }));
     if (cancelBtn) cancelBtn.addEventListener('click', () => finish({ confirm: false, cancel: true }));
     mask.addEventListener('click', (e) => {
-      if (e.target === mask) finish({ confirm: false, cancel: true });
+      if (maskClosable && e.target === mask) finish({ confirm: false, cancel: true });
     });
 
     document.body.appendChild(mask);
@@ -164,7 +166,7 @@ const wx = {
   removeStorageSync: storage.remove,
   showToast,
   showModal,
-  showLoading: ({ title = '' } = {}) => showToast({ title: title || '加载中…', duration: 60000 }),
+  showLoading: ({ title = '' } = {}) => showToast({ title: title || t('loadingEllipsis'), duration: 60000 }),
   hideLoading: () => {
     if (toastEl) toastEl.classList.remove('show');
   },

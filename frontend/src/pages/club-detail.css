@@ -147,6 +147,24 @@
 .rules-block {
   margin-top: 12px;
 }
+.email-block {
+  margin-top: 12px;
+}
+.email-text {
+  display: inline-block;
+  max-width: 100%;
+  color: var(--pal-deep);
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+}
+.email-text.is-missing {
+  color: var(--text-color-secondary);
+  text-decoration: none;
+}
 .rules-title {
   margin-bottom: 4px;
 }

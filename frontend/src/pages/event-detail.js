@@ -6,6 +6,7 @@ import { wx } from '../adapter/wx.js';
 import { state } from '../state.js';
 import * as eventSvc from '../services/event.js';
 import { formatDateTime } from '../utils/format.js';
+import { localizeEvent, t } from '../i18n.js';
 
 function escapeHtml(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({
@@ -17,17 +18,18 @@ class EventDetailPage {
   mount(container, query) {
     this.el = container;
     this.eventId = query.id;
-    container.innerHTML = '<div class="page event-detail-page"><div class="empty">加载中<span class="px-spin"></span></div></div>';
+    container.innerHTML = `<div class="page event-detail-page"><div class="empty">${t('loading')}<span class="px-spin"></span></div></div>`;
     this.load();
   }
 
   async load() {
-    const evt = await eventSvc.getEventDetail(this.eventId);
-    if (!evt) {
-      this.el.innerHTML = '<div class="page event-detail-page"><div class="empty">活动不存在</div></div>';
+    const sourceEvent = await eventSvc.getEventDetail(this.eventId);
+    if (!sourceEvent) {
+      this.el.innerHTML = `<div class="page event-detail-page"><div class="empty">${t('eventMissing')}</div></div>`;
       return;
     }
-    const typeText = eventSvc.TYPE_TEXT[evt.type] || '活动';
+    const evt = localizeEvent(sourceEvent);
+    const typeText = evt.type === 'stage_show' ? t('stageShow') : evt.type === 'npc' ? t('hiddenQuest') : evt.type === 'reward' ? t('prizePoint') : evt.type === 'club_event' ? t('clubEvent') : t('event');
     this.el.innerHTML = `
       <div class="page event-detail-page">
         <div class="head ${escapeHtml(evt.type)}">
@@ -36,14 +38,14 @@ class EventDetailPage {
           <div class="time">${escapeHtml(evt.startTime)} ～ ${escapeHtml(evt.endTime)}</div>
         </div>
         <div class="card">
-          <div class="row"><span class="label">地点</span><span class="value">${escapeHtml(evt.location)}</span></div>
-          <div class="row"><span class="label">时间</span><span class="value">${escapeHtml(formatDateTime(evt.startTime))} 开始</span></div>
+          <div class="row"><span class="label">${t('location')}</span><span class="value">${escapeHtml(evt.location)}</span></div>
+          <div class="row"><span class="label">${t('time')}</span><span class="value">${escapeHtml(formatDateTime(evt.startTime))} ${t('starts')}</span></div>
         </div>
         <div class="card">
-          <div class="section-title">活动介绍</div>
+          <div class="section-title">${t('eventIntro')}</div>
           <div class="desc">${escapeHtml(evt.desc)}</div>
         </div>
-        <button class="btn-primary go-btn">去现场（地图导航）</button>
+        <button class="btn-primary go-btn">${t('goThere')}</button>
       </div>`;
 
     this.el.querySelector('.go-btn').addEventListener('click', () => this.onGoScene(evt));
@@ -67,4 +69,4 @@ class EventDetailPage {
   }
 }
 
-export default { title: '活动详情', mount: (c, q) => new EventDetailPage().mount(c, q) };
+export default { title: () => t('eventDetails'), mount: (c, q) => new EventDetailPage().mount(c, q) };

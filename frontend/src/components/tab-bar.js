@@ -1,6 +1,8 @@
 /**
  * components/tab-bar.js — 底部导航栏（web 版，普通 DOM 实现）
  */
+import { t } from '../i18n.js';
+
 function isStaffRole() {
   try {
     return localStorage.getItem('user_role') === 'staff';
@@ -13,25 +15,18 @@ export class TabBar {
   constructor(el) {
     this.el = el;
     this.selected = 0;
-    this.list = [];
-    this.updateForRole();
-  }
-
-  updateForRole() {
-    const fourthTab = isStaffRole()
-      ? { path: '#/staff/redeem', text: '核销' }
-      : { path: '#/reward', text: '奖励' };
-    if (this.list[3] && this.list[3].path === fourthTab.path) return;
-    this.list = [
-      { path: '#/map', text: '地图' },
-      { path: '#/clubs', text: '社团' },
-      { path: '#/events', text: '活动' },
-      fourthTab,
-    ];
     this.render();
   }
 
   render() {
+    this.list = [
+      { path: '#/map', text: t('map') },
+      { path: '#/clubs', text: t('clubs') },
+      { path: '#/events', text: t('events') },
+      isStaffRole()
+        ? { path: '#/staff/redeem', text: '核销' }
+        : { path: '#/reward', text: '奖励' },
+    ];
     this.el.innerHTML = '';
     const bar = document.createElement('div');
     bar.className = 'tab-bar';

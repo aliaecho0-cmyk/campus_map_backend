@@ -6,9 +6,12 @@ import { wx } from '../adapter/wx.js';
 import { state } from '../state.js';
 import * as clubSvc from '../services/club.js';
 import { buildMatch } from '../utils/search.js';
+import { categoryText, isEnglish, localizeClub, statusText, t } from '../i18n.js';
 
-const CAT_KEY_MAP = { 学术: 'academic', 艺术: 'art', 体育: 'sport', 科技: 'tech', 志愿: 'volunteer' };
-const STATUS_TEXT = { open: '营业中', break: '休息中', closed: '已收摊' };
+const CAT_KEY_MAP = {
+  学术: 'academic', 艺术: 'art', 体育: 'sport', 科技: 'tech', 志愿: 'volunteer',
+  Academic: 'academic', Arts: 'art', Sports: 'sport', Technology: 'tech', Community: 'volunteer',
+};
 
 function escapeHtml(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({
@@ -31,10 +34,10 @@ class ClubsPage {
       <div class="page clubs-page">
         <div class="search-bar">
           <div class="search-field">
-            <input class="search-input" placeholder="搜索社团名称" />
+            <input class="search-input" placeholder="${t('searchClubNames')}" />
             <span class="search-clear" style="display:none">×</span>
           </div>
-          <span class="search-btn">搜索</span>
+          <span class="search-btn">${t('search')}</span>
         </div>
         <div class="cat-bar"></div>
         <div class="count"></div>
@@ -69,7 +72,7 @@ class ClubsPage {
     clubSvc.CATEGORIES.forEach((cat) => {
       const item = document.createElement('span');
       item.className = 'cat-item' + (cat === this.activeCategory ? ' active' : '');
-      item.textContent = cat;
+      item.textContent = cat === '全部' ? t('all') : categoryText(cat);
       item.addEventListener('click', () => {
         if (cat === this.activeCategory) return;
         this.activeCategory = cat;
@@ -87,7 +90,7 @@ class ClubsPage {
       page: 1,
       pageSize: 999,
     });
-    this.allClubs = list;
+    this.allClubs = list.map(localizeClub);
     this.applyFilter();
   }
 
@@ -104,7 +107,7 @@ class ClubsPage {
       }
       results.sort((a, b) => b._score - a._score);
     }
-    this.count.textContent = `共 ${results.length} 个社团`;
+    this.count.textContent = t('totalClubs', { count: results.length });
     this.renderList(results);
   }
 
@@ -118,17 +121,17 @@ class ClubsPage {
       card.innerHTML = `
         <div class="logo cat-${catKey}">${club.logo
           ? `<img class="logo-img" src="${escapeHtml(club.logo)}" alt="${escapeHtml(club.name)}" loading="lazy" />`
-          : escapeHtml(club.name ? club.name[0] : '社')}</div>
+          : escapeHtml(club.name ? club.name[0] : (isEnglish() ? 'C' : '社'))}</div>
         <div class="main">
           <div class="row1">
             <span class="name">${nameHtml(club.name, club.nameSegments)}</span>
             <span class="tag cat-${catKey}">${escapeHtml(club.category)}</span>
           </div>
-          <div class="row2">${escapeHtml(club.slogan || club.intro || '暂无简介')}</div>
+          <div class="row2">${escapeHtml(club.slogan || club.intro || t('noDescription'))}</div>
           <div class="row3">
-            ${club.boothId ? `<span class="booth">摊位 ${escapeHtml(club.boothId)}</span>` : ''}
-            ${club.status ? `<span class="status-line"><span class="status-dot ${escapeHtml(club.status)}"></span><span class="status-text">${STATUS_TEXT[club.status] || ''}</span></span>` : ''}
-            <span class="map-link">在地图查看</span>
+            ${club.boothId ? `<span class="booth">${t('booth', { id: escapeHtml(club.boothId) })}</span>` : ''}
+            ${club.status ? `<span class="status-line"><span class="status-dot ${escapeHtml(club.status)}"></span><span class="status-text">${statusText(club.status)}</span></span>` : ''}
+            <span class="map-link">${t('viewOnMap')}</span>
           </div>
         </div>`;
       card.addEventListener('click', () => {
@@ -136,14 +139,13 @@ class ClubsPage {
       });
       card.querySelector('.map-link').addEventListener('click', (e) => {
         e.stopPropagation();
-        state.startBoothViewAfterMapFocus = String(club.boothId);
         state.highlightBoothId = club.boothId;
         wx.switchTab({ url: '#/map' });
       });
       this.list.appendChild(card);
     });
     if (!clubs.length) {
-      this.list.innerHTML = '<div class="empty">暂无社团，换个分类或关键词试试</div>';
+      this.list.innerHTML = `<div class="empty">${t('noClubs')}</div>`;
     }
   }
 
@@ -152,4 +154,4 @@ class ClubsPage {
   }
 }
 
-export default { title: '社团', mount: (c) => new ClubsPage().mount(c) };
+export default { title: () => t('clubs'), mount: (c) => new ClubsPage().mount(c) };

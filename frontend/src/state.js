@@ -5,6 +5,8 @@ export const state = {
   startBoothViewAfterMapFocus: '',
   highlightCenter: null, // 活动「去现场」→ 地图页定位/高亮区域
   tutorialLaunched: false, // 本会话是否已处理过新手指引（每会话只播一次）
+  entryReady: false, // 开场、语言选择和首个公告完成后再启动教程
+  pendingOnboarding: false, // 从其他页面请求重播时，回到地图后启动
   tabbar: null,
   tutorial: null,
 };

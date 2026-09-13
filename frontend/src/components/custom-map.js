@@ -12,6 +12,11 @@ import * as canvasMap from '../utils/canvas-map.js';
 import SVG_BASE_FALLBACK from './historical-map-svg.js';
 import renderSVG from './svg-canvas-renderer.js';
 import { createMapPainter, MAP_IMAGE_WIDTH, MAP_IMAGE_HEIGHT } from './map-painter.js';
+import booth8HighlightSrc from '../../地图相关素材/按钮8.png';
+import npcUpLeftSrc from '../../人物素材/透明背景/up_left_foot_forward.png';
+import npcUpRightSrc from '../../人物素材/透明背景/up_right_foot_forward.png';
+import npcDownLeftSrc from '../../人物素材/透明背景/down_left_foot_forward.png';
+import npcDownRightSrc from '../../人物素材/透明背景/down_right_foot_forward.png';
 
 const MAP_WIDTH = canvasMap.GRID_COLS * canvasMap.CELL_PX;
 const MAP_HEIGHT = canvasMap.GRID_ROWS * canvasMap.CELL_PX;
@@ -21,7 +26,16 @@ const INITIAL_ZOOM = 1;
 const CLAMP_MARGIN = 80;
 
 const DEFAULT_VIEW_CELLS_X = 17;
-const DEFAULT_FOCUS_CENTER = { x: 11, y: 14 };
+const DEFAULT_FOCUS_CENTER = { x: 10, y: 14 };
+
+/* 1–8 号与 15 号一列之间的石板路，x=105 为两列按钮净空区域的中心线。 */
+const NPC_ROUTE = { x: 105, top: 168, bottom: 414 };
+const NPC_SPEED = 24;
+const NPC_STEP_MS = 180;
+const NPC_FRAMES = {
+  up: [npcUpLeftSrc, npcUpRightSrc],
+  down: [npcDownLeftSrc, npcDownRightSrc],
+};
 
 /* 参考位图的摊位并非严格等距，按钮按实测中心绘制，避免越往下偏差越大。 */
 const BOOTH_COLUMN_CENTERS = {
@@ -70,6 +84,8 @@ export class CustomMap {
 
     this._booths = [];
     this._highlightedId = '';
+    this._highlightPhase = 0;
+    this._highlightTimer = 0;
     this._highlightRegion = null;
     this._viewport = { scale: 1, x: 0, y: 0 };
     this._rect = null;
@@ -80,6 +96,16 @@ export class CustomMap {
     this._baseDrawn = false;
     this._svgString = SVG_BASE_FALLBACK;
     this._painter = null;
+    this._booth8Highlight = null;
+    this._booth8Flash = false;
+    this._booth8Timer = 0;
+    this._npcLayer = null;
+    this._npc = null;
+    this._npcRaf = 0;
+    this._npcStartedAt = 0;
+    this._npcFrameKey = '';
+    this._npcReady = false;
+    this._destroyed = false;
 
     // 手势运行时
     this._gesture = null;
@@ -100,8 +126,86 @@ export class CustomMap {
     // 尺寸/坐标/初始取景必须同步完成：页面在微任务里就会调 focusMapPoint，
     // 地图就绪后即可响应页面聚焦。
     this._initCanvasSync();
+    this._initNpc();
     this._bindGestures();
     this._loadPainter();
+    this._loadBooth8Highlight();
+  }
+
+  _initNpc() {
+    const layer = document.createElement('div');
+    layer.className = 'map-npc-layer';
+    layer.style.width = `${MAP_WIDTH}px`;
+    layer.style.height = `${MAP_HEIGHT}px`;
+    const npc = document.createElement('img');
+    npc.className = 'map-npc';
+    npc.alt = '';
+    npc.setAttribute('aria-hidden', 'true');
+    npc.draggable = false;
+    layer.appendChild(npc);
+    this.root.appendChild(layer);
+    this._npcLayer = layer;
+    this._npc = npc;
+
+    this._apply(this._viewport);
+    const sources = Object.values(NPC_FRAMES).flat();
+    npc.addEventListener('load', () => npc.classList.add('is-ready'), { once: true });
+    npc.src = NPC_FRAMES.down[0];
+    Promise.all(sources.map((src) => new Promise((resolve) => {
+      const image = new Image();
+      image.onload = resolve;
+      image.onerror = resolve;
+      image.src = src;
+    }))).then(() => {
+      if (this._destroyed || !this._npc) return;
+      this._npcReady = true;
+      this._npcStartedAt = performance.now();
+      this._tickNpc(this._npcStartedAt);
+    });
+  }
+
+  _tickNpc(now) {
+    if (this._destroyed || !this._npc || !this._npcReady) return;
+    const elapsed = Math.max(0, now - this._npcStartedAt);
+    const routeLength = NPC_ROUTE.bottom - NPC_ROUTE.top;
+    const roundTrip = routeLength * 2;
+    const distance = ((elapsed / 1000) * NPC_SPEED) % roundTrip;
+    const x = NPC_ROUTE.x;
+    let y = NPC_ROUTE.top;
+    let direction = 'down';
+
+    if (distance <= routeLength) {
+      y += distance;
+    } else {
+      y = NPC_ROUTE.bottom - (distance - routeLength);
+      direction = 'up';
+    }
+
+    const frame = Math.floor(elapsed / NPC_STEP_MS) % 2;
+    const frameKey = `${direction}-${frame}`;
+    if (frameKey !== this._npcFrameKey) {
+      this._npc.src = NPC_FRAMES[direction][frame];
+      this._npcFrameKey = frameKey;
+    }
+    this._npc.style.left = `${x}px`;
+    this._npc.style.top = `${y}px`;
+    this._npcRaf = requestAnimationFrame((time) => this._tickNpc(time));
+  }
+
+  _loadBooth8Highlight() {
+    const image = new Image();
+    image.onload = () => {
+      if (this._destroyed) return;
+      this._booth8Highlight = image;
+      this._booth8Flash = true;
+      this._drawAll();
+      this._booth8Timer = window.setInterval(() => {
+        this._booth8Flash = !this._booth8Flash;
+        this._drawAll();
+      }, 650);
+    };
+    image.onerror = () => {};
+    image.src = booth8HighlightSrc;
   }
 
   /** 更新摊位列表（数据变化时重绘，缩放/平移不重绘） */
@@ -112,6 +216,15 @@ export class CustomMap {
 
   setHighlightedId(id) {
     this._highlightedId = id || '';
+    this._highlightPhase = 0;
+    clearInterval(this._highlightTimer);
+    this._highlightTimer = 0;
+    if (this._highlightedId) {
+      this._highlightTimer = window.setInterval(() => {
+        this._highlightPhase = (this._highlightPhase + 1) % 4;
+        this._drawAll();
+      }, 280);
+    }
     this._drawAll();
   }
 
@@ -439,6 +552,9 @@ export class CustomMap {
     }
     this._viewport = v;
     this.canvas.style.transform = `translate(${v.x}px, ${v.y}px) scale(${v.scale})`;
+    if (this._npcLayer) {
+      this._npcLayer.style.transform = `translate(${v.x}px, ${v.y}px) scale(${v.scale})`;
+    }
   }
 
   _fitInitial(rect) {
@@ -458,10 +574,12 @@ export class CustomMap {
       const s = scale != null ? scale : v.scale;
       this._viewport = { scale: s, x, y };
       this.canvas.classList.add('with-transition');
+      this._npcLayer?.classList.add('with-transition');
       this._apply({ scale: s, x, y });
       clearTimeout(this._moveTimer); // 连续两次聚焦时，别让上一个定时器提前摘掉过渡
       this._moveTimer = setTimeout(() => {
         this.canvas.classList.remove('with-transition');
+        this._npcLayer?.classList.remove('with-transition');
         resolve();
       }, 360);
     });
@@ -604,6 +722,18 @@ export class CustomMap {
     ctx.textBaseline = 'middle';
     for (const b of this._booths) {
       const point = getBoothRenderPoint(b);
+      if (b.id === this._highlightedId) {
+        this._drawHighlightedBoothNumber(ctx, b, point);
+        continue;
+      }
+      if (b.id === '8' && this._booth8Flash && this._booth8Highlight) {
+        ctx.save();
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(this._booth8Highlight, point.x - 29, point.y - 23, 58, 46);
+        ctx.restore();
+        continue;
+      }
       const x = Math.round(point.x - 17);
       const y = Math.round(point.y - 17);
       // 右下硬阴影、木框、羊皮纸面与青绿色棚檐沿用参考图的摊位语言。
@@ -627,6 +757,51 @@ export class CustomMap {
     ctx.restore();
   }
 
+  /** 当前弹窗对应摊位：紫色明暗闪烁，并以固定像素颗粒模拟马赛克干扰。 */
+  _drawHighlightedBoothNumber(ctx, booth, point) {
+    const phase = this._highlightPhase;
+    const bright = phase % 2 === 0;
+    const x = Math.round(point.x - 17);
+    const y = Math.round(point.y - 17);
+    const seed = Number(booth.id) || 0;
+
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.fillStyle = bright ? '#2b173d' : '#3c2056';
+    ctx.fillRect(x + 4, y + 5, 33, 33);
+    ctx.fillStyle = bright ? '#6b36a0' : '#4d2873';
+    ctx.fillRect(x + 1, y + 2, 34, 34);
+    ctx.fillStyle = bright ? '#a86ee0' : '#7544aa';
+    ctx.fillRect(x + 3, y + 4, 30, 30);
+    ctx.fillStyle = bright ? '#c79af0' : '#9666c8';
+    ctx.fillRect(x + 5, y + 8, 26, 24);
+    ctx.fillStyle = bright ? '#5a2b82' : '#44205f';
+    ctx.fillRect(x + 4, y + 3, 28, 6);
+    ctx.fillStyle = bright ? '#ead7ff' : '#b88add';
+    ctx.fillRect(x + 7, y + 3, 22, 2);
+
+    const pixels = bright
+      ? ['#e5c9ff', '#8e55c3', '#63308c']
+      : ['#b985df', '#6e399b', '#4d236d'];
+    for (let py = 0; py < 6; py += 1) {
+      for (let px = 0; px < 6; px += 1) {
+        if ((px * 7 + py * 3 + seed + phase * 2) % 5 !== 0) continue;
+        ctx.fillStyle = pixels[(px + py + phase) % pixels.length];
+        ctx.fillRect(x + 4 + px * 5, y + 4 + py * 5, 4, 4);
+      }
+    }
+
+    const glitch = phase < 2 ? 1 : -1;
+    ctx.fillStyle = bright ? '#f3e7ff' : '#dac2ef';
+    ctx.fillRect(x + 5 + glitch, y + 11, 25, 2);
+    ctx.fillRect(x + 7 - glitch, y + 29, 21, 2);
+    ctx.fillStyle = '#321542';
+    ctx.fillText(booth.id, point.x + 1, point.y + 5);
+    ctx.fillStyle = '#fff3ff';
+    ctx.fillText(booth.id, point.x, point.y + 4);
+    ctx.restore();
+  }
+
   _drawBooths(ctx) {
     const hl = this._highlightedId;
     if (!hl) return;
@@ -637,10 +812,11 @@ export class CustomMap {
     const x = point.x - cellPx / 2;
     const y = point.y - cellPx / 2;
     ctx.save();
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
+    const bright = this._highlightPhase % 2 === 0;
+    ctx.fillStyle = bright ? 'rgba(213, 175, 255, 0.34)' : 'rgba(127, 72, 179, 0.24)';
     ctx.fillRect(x + 2, y + 2, cellPx - 4, cellPx - 4);
-    ctx.strokeStyle = '#925cd1';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = bright ? '#d5a8ff' : '#7b42ad';
+    ctx.lineWidth = bright ? 4 : 2;
     ctx.strokeRect(x + 2, y + 2, cellPx - 4, cellPx - 4);
     ctx.restore();
   }
@@ -722,6 +898,7 @@ export class CustomMap {
   }
 
   destroy() {
+    this._destroyed = true;
     const h = this._h;
     if (h) {
       const root = this.root;
@@ -737,6 +914,9 @@ export class CustomMap {
     }
     window.removeEventListener('resize', this._onResize);
     clearTimeout(this._moveTimer);
+    clearInterval(this._booth8Timer);
+    clearInterval(this._highlightTimer);
+    cancelAnimationFrame(this._npcRaf);
     this._gesture = null;
     this._mouseDown = false;
   }

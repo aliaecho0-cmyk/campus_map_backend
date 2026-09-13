@@ -19,6 +19,7 @@
  */
 
 import { getClubLogo } from './logo-map.js';
+import { BOOTH_INFO } from './booth-info.js';
 
 /** 四大分区（与往年方案一致，筛选使用） */
 const areas = [
@@ -269,7 +270,8 @@ const PLAN_NAME_ALIASES = {
 const clubDataByName = new Map(CLUB_DATA.map((club) => [club.name, club]));
 const latestClubData = LATEST_BOOTH_PLAN.map(([num, name, x, y]) => {
   const source = clubDataByName.get(PLAN_NAME_ALIASES[name] || name);
-  if (source) return { ...source, num, name, x, y };
+  const latestInfo = BOOTH_INFO[name] || {};
+  if (source) return { ...source, ...latestInfo, num, name, x, y };
   return {
     num,
     name,
@@ -279,6 +281,7 @@ const latestClubData = LATEST_BOOTH_PLAN.map(([num, name, x, y]) => {
     slogan: '研究生事务与校园服务',
     intro: '研究生会摊位，具体介绍以现场信息为准。',
     gameRules: '现场互动规则请咨询摊位工作人员。',
+    ...latestInfo,
   };
 });
 
@@ -300,7 +303,11 @@ const booths = latestClubData.map((c) => {
     heat: 5 + ((c.num * 17) % 60),
     desc: c.slogan,
     intro: c.intro,
+    introEn: c.introEn,
+    nameEn: c.nameEn,
+    email: c.email,
     gameRules: c.gameRules,
+    gameRulesEn: c.gameRulesEn,
   };
 });
 
@@ -312,7 +319,11 @@ const clubs = booths.map((b) => ({
   boothId: b.id,
   slogan: b.desc,
   intro: b.intro,
+  introEn: b.introEn,
+  nameEn: b.nameEn,
+  email: b.email,
   gameRules: b.gameRules,
+  gameRulesEn: b.gameRulesEn,
   logo: getClubLogo(b.clubName),
   isRecruiting: true,
   favoriteCount: 0,

@@ -6,12 +6,13 @@ import { wx } from '../adapter/wx.js';
 import { state } from '../state.js';
 import * as eventSvc from '../services/event.js';
 import { formatTime } from '../utils/format.js';
+import { localizeEvent, t } from '../i18n.js';
 
 const FILTERS = [
-  { code: '', name: '全部' },
-  { code: 'stage_show', name: '舞台' },
-  { code: 'npc', name: '隐藏任务' },
-  { code: 'reward', name: '兑奖点' },
+  { code: '', label: 'all' },
+  { code: 'stage_show', label: 'stage' },
+  { code: 'npc', label: 'hiddenQuest' },
+  { code: 'reward', label: 'prizePoint' },
 ];
 
 function escapeHtml(s) {
@@ -40,7 +41,7 @@ class EventsPage {
     FILTERS.forEach((f) => {
       const item = document.createElement('span');
       item.className = 'filter-item' + (f.code === this.activeFilter ? ' active' : '');
-      item.textContent = f.name;
+      item.textContent = t(f.label);
       item.addEventListener('click', () => {
         if (f.code === this.activeFilter) return;
         this.activeFilter = f.code;
@@ -53,27 +54,27 @@ class EventsPage {
 
   async loadEvents() {
     const { list } = await eventSvc.getEvents({ type: this.activeFilter });
-    this.render(list);
+    this.render(list.map(localizeEvent));
   }
 
   render(events) {
     this.timeline.innerHTML = '';
     events.forEach((evt, index) => {
       const isStage = evt.type === 'stage_show';
-      const typeLabel = isStage ? '舞台' : evt.type === 'npc' ? 'NPC' : '兑奖';
+      const typeLabel = isStage ? t('stage') : evt.type === 'npc' ? t('npc') : t('prize');
       const card = document.createElement('div');
       card.className = 'event-card card';
       card.style.setProperty('--i', Math.min(index, 8));
       card.innerHTML = `
         <div class="time-col">
-          <div class="time">${isStage ? escapeHtml(formatTime(evt.startTime)) : '全天'}</div>
+          <div class="time">${isStage ? escapeHtml(formatTime(evt.startTime)) : t('allDay')}</div>
           <div class="type-tag type-${escapeHtml(evt.type)}">${typeLabel}</div>
         </div>
         <div class="content">
           <div class="title">${escapeHtml(evt.title)}</div>
           <div class="meta">${escapeHtml(evt.location)} ｜ ${escapeHtml(evt.startTime)}</div>
           <div class="desc">${escapeHtml(evt.desc)}</div>
-          ${isStage ? '<div class="action">去现场</div>' : ''}
+          ${isStage ? `<div class="action">${t('goThere')}</div>` : ''}
         </div>`;
       card.addEventListener('click', () => {
         wx.navigateTo({ url: `#/event-detail?id=${evt.id}` });
@@ -89,7 +90,7 @@ class EventsPage {
       this.timeline.appendChild(card);
     });
     if (!events.length) {
-      this.timeline.innerHTML = '<div class="empty">暂无活动</div>';
+      this.timeline.innerHTML = `<div class="empty">${t('noEvents')}</div>`;
     }
   }
 
@@ -98,4 +99,4 @@ class EventsPage {
   }
 }
 
-export default { title: '活动', mount: (c) => new EventsPage().mount(c) };
+export default { title: () => t('events'), mount: (c) => new EventsPage().mount(c) };
