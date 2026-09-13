@@ -288,7 +288,7 @@ export class CustomMap {
   _refreshFont() {
     const fonts = document.fonts;
     if (!fonts || typeof fonts.load !== 'function') return;
-    fonts.load('18px "px-cjk"', '0123456789社联兑奖点一鸥茶草坪图书馆').then(
+    fonts.load('18px "px-cjk"', '0123456789社联摊位一鸥茶草坪图书馆').then(
       () => {
         this._drawAll();
       },
@@ -606,7 +606,7 @@ export class CustomMap {
     if (!ctx) return;
     ctx.clearRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
     this._drawBaseMap(ctx);
-    this._drawPrizePointLabel(ctx);
+    this._coverPrizePointLabel(ctx);
     this._drawTeaShopLabel(ctx);
     this._drawBooths(ctx);
     this._drawRegionHighlight(ctx);
@@ -670,8 +670,8 @@ export class CustomMap {
     ctx.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
   }
 
-  /** 覆盖底图旧字，确保左上角服务地标始终显示正式名称。 */
-  _drawPrizePointLabel(ctx) {
+  /** 覆盖底图旧字；左上角服务地标按当前方案不显示文字。 */
+  _coverPrizePointLabel(ctx) {
     ctx.save();
     ctx.fillStyle = '#39284c';
     ctx.fillRect(71, 43, 112, 30);
@@ -683,11 +683,6 @@ export class CustomMap {
     ctx.fillRect(74, 46, 100, 18);
     ctx.fillStyle = '#fff0cf';
     ctx.fillRect(75, 46, 98, 2);
-    ctx.fillStyle = '#49314f';
-    ctx.font = '16px "px-cjk", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('社联兑奖点', 124, 56);
     ctx.restore();
   }
 

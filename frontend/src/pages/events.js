@@ -72,7 +72,7 @@ class EventsPage {
         </div>
         <div class="content">
           <div class="title">${escapeHtml(evt.title)}</div>
-          <div class="meta">${escapeHtml(evt.location)} ｜ ${escapeHtml(evt.startTime)}</div>
+          <div class="meta">${escapeHtml(evt.location)} ｜ ${escapeHtml(evt.startTime)}${isStage ? ` ～ ${escapeHtml(formatTime(evt.endTime))}` : ''}</div>
           <div class="desc">${escapeHtml(evt.desc)}</div>
           ${isStage ? `<div class="action">${t('goThere')}</div>` : ''}
         </div>`;

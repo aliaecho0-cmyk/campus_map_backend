@@ -69,10 +69,26 @@
   color: var(--text-color-primary);
   margin-bottom: 8px;
 }
-.desc {
+.event-detail-page .desc {
+  display: block;
   font-size: 13px;
   color: var(--text-color-regular);
   line-height: 1.8;
+  white-space: pre-line;
+  overflow: visible;
+  -webkit-box-orient: initial;
+  -webkit-line-clamp: unset;
+}
+.program-list {
+  margin: 0;
+  padding-left: 24px;
+  font-size: 13px;
+  color: var(--text-color-regular);
+  line-height: 1.8;
+}
+.program-list li::marker {
+  color: var(--pal-deep);
+  font-family: var(--font-px);
 }
 .go-btn {
   margin-top: 20px;

@@ -45,6 +45,13 @@ class EventDetailPage {
           <div class="section-title">${t('eventIntro')}</div>
           <div class="desc">${escapeHtml(evt.desc)}</div>
         </div>
+        ${Array.isArray(evt.programs) && evt.programs.length ? `
+          <div class="card program-card">
+            <div class="section-title">${t('programList')}</div>
+            <ol class="program-list">
+              ${evt.programs.map((program) => `<li>${escapeHtml(program)}</li>`).join('')}
+            </ol>
+          </div>` : ''}
         <button class="btn-primary go-btn">${t('goThere')}</button>
       </div>`;
 
@@ -57,7 +64,8 @@ class EventDetailPage {
     } else if (evt.type === 'npc') {
       state.highlightCenter = { resetView: true };
     } else if (evt.type === 'reward') {
-      state.highlightCenter = { thanks: true };
+      state.highlightCenter = null;
+      state.highlightBoothId = evt.boothId || '25';
     } else {
       state.highlightCenter = { mapX: Number(evt.mapX) || 10, mapY: Number(evt.mapY) || 8, plaza: true };
     }

@@ -4,7 +4,7 @@ import * as mock from '../data/mock.js';
 const TYPE_TEXT = {
   stage_show: '舞台表演',
   npc: '隐藏任务',
-  reward: '兑奖点',
+  reward: '社联兑奖',
   club_event: '社团活动',
 };
 

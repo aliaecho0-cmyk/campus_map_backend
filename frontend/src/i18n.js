@@ -21,7 +21,7 @@ const UI = {
     loading: '加载中', stage: '舞台', hiddenQuest: '隐藏任务', prizePoint: '兑奖点',
     npc: 'NPC', prize: '兑奖', allDay: '全天', goThere: '去现场', noEvents: '暂无活动',
     eventDetails: '活动详情', stageShow: '舞台表演', clubEvent: '社团活动',
-    event: '活动', location: '地点', time: '时间', starts: '开始', eventIntro: '活动介绍',
+    event: '活动', location: '地点', time: '时间', starts: '开始', eventIntro: '活动介绍', programList: '节目单',
     eventMissing: '活动不存在', skip: '跳过', next: '下一步', complete: '完成',
     tutorialHint: '★ 新手提示', tutorialPrevious: '◀ 上一步',
     tutorialNext: '下一步 ▶', startExploring: '开始探索 ▶',
@@ -85,7 +85,7 @@ const UI = {
     loading: 'Loading', stage: 'Stage', hiddenQuest: 'Hidden Quest', prizePoint: 'Prize Point',
     npc: 'NPC', prize: 'Prize', allDay: 'All Day', goThere: 'Go There', noEvents: 'No events',
     eventDetails: 'Event Details', stageShow: 'Stage Performance', clubEvent: 'Club Event',
-    event: 'Event', location: 'Location', time: 'Time', starts: 'Starts', eventIntro: 'About This Event',
+    event: 'Event', location: 'Location', time: 'Time', starts: 'Starts', eventIntro: 'About This Event', programList: 'Program',
     eventMissing: 'Event not found', skip: 'Skip', next: 'Next', complete: 'Done',
     tutorialHint: '★ Rookie Guide', tutorialPrevious: '◀ Previous',
     tutorialNext: 'Next ▶', startExploring: 'Start Exploring ▶',
@@ -224,13 +224,19 @@ const CLUB_NAMES_EN = {
 };
 
 const EVENT_EN = {
-  'evt-stage-1': { title: 'Max Dancing Club: Opening Dance', location: 'Sunken Plaza Stage', desc: 'A high-energy dance medley opens the Clubs Fair.' },
-  'evt-stage-2': { title: 'Music Union Band: Burgundy Red', location: 'Sunken Plaza Stage', desc: 'Drums and guitar bring a relaxed late-summer groove to the stage.' },
-  'evt-stage-3': { title: 'Chinese Opera Association: Water Sleeves Through Time', location: 'Sunken Plaza Stage', desc: 'Traditional water-sleeve movements connect classical theatre with the present.' },
-  'evt-stage-4': { title: 'HIPHOP Club: Fearless', location: 'Sunken Plaza Stage', desc: 'Powerful beats and vocals encourage everyone to face every challenge.' },
-  'evt-stage-5': { title: 'Phoenix ACG Club: Otaku Dance', location: 'Sunken Plaza Stage', desc: 'Jump into the music with an energetic ACG dance performance.' },
+  'evt-stage-1': { title: 'Phoenix ACG Club Band Performance', location: 'Sunken Plaza Stage', desc: 'The Phoenix ACG Club band performs four distinctive live songs.' },
+  'evt-stage-2': { title: 'Max Dancing Club Performance', location: 'Sunken Plaza Stage', desc: 'Max Dancing Club presents a dynamic showcase spanning multiple dance styles.' },
+  'evt-stage-3': { title: 'Encore Musical Theatre Club Performance', location: 'Sunken Plaza Stage', desc: 'Encore Musical Theatre Club brings classic musical theatre selections to the stage.' },
+  'evt-stage-4': { title: 'Phoenix ACG Club Otaku Dance Performance', location: 'Sunken Plaza Stage', desc: 'Phoenix ACG Club presents five energetic otaku dance pieces.' },
+  'evt-stage-5': { title: 'Music Union Performance', location: 'Sunken Plaza Stage', desc: 'Music Union lights up the stage with a live vocal performance.' },
+  'evt-stage-6': { title: 'HIPHOP Music Club Performance', location: 'Sunken Plaza Stage', desc: 'HIPHOP Music Club performs a live song medley.' },
+  'evt-stage-7': { title: 'Max Dancing Club Open Dance', location: 'Sunken Plaza Stage', desc: 'Join Max Dancing Club for a free-form interactive dance session.' },
   'evt-npc': { title: 'Hidden Quest: Find the NPC', location: 'Roaming among the booths', desc: 'Find the roaming NPC, complete the mission, and claim a special prize.' },
-  'evt-reward': { title: 'Student Association Prize Point', location: 'Top-left Prize Point', desc: 'Redeem event rewards here. Limited moon and star charms are available.' },
+  'evt-reward': {
+    title: 'Student Association Redemption',
+    location: 'Student Association Booth',
+    desc: '📍Game Overview\n\nGet ready for the Clubs Fair! Explore virtually and join the fun in person!\n\n🖥Online Gameplay\n\nBrowse information for 20 or more booths on the map to unlock the「Know-It-All」badge. Redeem it at the Student Associations Union booth for a pack of nostalgic childhood snacks or a free drink!\n\n🎮On-site Gameplay\n\nStart by visiting the Student Associations Union booth to grab your Stamp Collection Booklet and a limited-edition fan gift. Then, hunt down club booths and collect stamps by completing their tasks. Every 8 stamps for a lucky draw chance at the Student Associations Union booth!',
+  },
 };
 
 const ANNOUNCEMENT_EN = {
