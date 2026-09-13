@@ -16,16 +16,16 @@ import * as tut from './map/tutorial-steps.js';
 import { categoryText, localizeAnnouncement, localizeBooth, statusText, t } from '../i18n.js';
 
 const CAT_KEY_MAP = {
-  学术: 'academic',
-  艺术: 'art',
-  体育: 'sport',
-  科技: 'tech',
-  志愿: 'volunteer',
-  Academic: 'academic',
-  Arts: 'art',
-  Sports: 'sport',
-  Technology: 'tech',
-  Community: 'volunteer',
+  实践体验类: 'tech',
+  学术科技类: 'academic',
+  体育运动类: 'sport',
+  文化艺术类: 'art',
+  学生组织: 'volunteer',
+  'Practical Experience Clubs': 'tech',
+  'Academic & Science-Technology Clubs': 'academic',
+  'Sports Clubs': 'sport',
+  'Culture & Art Clubs': 'art',
+  'Student Organizations': 'volunteer',
 };
 
 /** 聚焦某个摊位时的缩放：约 6 格可见 */
@@ -68,6 +68,11 @@ class MapPage {
             <div class="legend-item"><span class="dot landscape"></span>${t('lawnPlaza')}</div>
             <div class="legend-item"><span class="dot activity"></span>${t('stonePath')}</div>
           </div>
+          <div class="tutorial-replay-slot">
+            <button class="tutorial-replay" type="button" aria-label="${t('replayTutorial')}" title="${t('replayTutorial')}">
+              <span aria-hidden="true">?</span>
+            </button>
+          </div>
           <div class="record-player-slot"></div>
           <div class="club-callout" id="clubCallout" style="display:none">
             <div class="cc-close">×</div>
@@ -100,6 +105,7 @@ class MapPage {
       container.querySelector('.record-player-slot'),
       container.querySelector('.map-legend'),
     );
+    this.tutorialReplayButton = container.querySelector('.tutorial-replay');
 
     // 自定义地图
     this.map = new CustomMap(container.querySelector('.custom-map'), {
@@ -114,6 +120,7 @@ class MapPage {
     });
     this.searchClear.addEventListener('click', () => this.onClearKeyword());
     this.searchMask.addEventListener('click', () => this.onSearchMaskTap());
+    this.tutorialReplayButton.addEventListener('click', () => this.replayTutorial());
     container.querySelector('.cc-close').addEventListener('click', () => this.onCalloutClose());
     container.querySelector('.cc-btn.primary').addEventListener('click', () => this.onCalloutDetail());
     this._bindEmailCopy();
@@ -586,6 +593,11 @@ class MapPage {
   }
 
   /* ---------- 新手指引 ---------- */
+  replayTutorial() {
+    state.pendingOnboarding = true;
+    this.maybeStartTutorial();
+  }
+
   maybeStartTutorial() {
     const forceStart = !!state.pendingOnboarding;
     if (state.tutorialLaunched && !forceStart) return;
@@ -659,7 +671,7 @@ class MapPage {
 
   _computeHighlight(step) {
     const c = this.map;
-    const tabIdx = { tabClub: 1, tabActivity: 2 }[step.target];
+    const tabIdx = { tabClub: 1, tabActivity: 2, tabReward: 3 }[step.target];
     if (tabIdx !== undefined) {
       const rects = state.tabbar ? state.tabbar.getButtonRects() : [];
       const r = rects[tabIdx];

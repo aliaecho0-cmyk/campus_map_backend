@@ -32,7 +32,11 @@ export class RecordPlayer {
 
   syncSize() {
     const height = this.sizeReference?.getBoundingClientRect().height || 0;
-    if (height > 0) this.root.style.setProperty('--record-player-size', `${height}px`);
+    if (height > 0) {
+      const size = `${height}px`;
+      this.root.style.setProperty('--record-player-size', size);
+      this.root.parentElement?.style.setProperty('--map-control-size', size);
+    }
   }
 
   setPlaying(playing) {

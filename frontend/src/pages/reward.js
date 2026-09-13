@@ -47,7 +47,7 @@ class RewardPage {
     container.innerHTML = `
       <div class="page reward-page">
         <div class="countdown-box"></div>
-        <section class="card reward-card">
+        <section class="card reward-card badge-progress-card">
           <div class="card-title">${t('badgeProgress')}</div>
           <div class="badge-body"></div>
         </section>
@@ -111,6 +111,7 @@ class RewardPage {
       : `<span class="badge-status">${escapeHtml(name)}</span>`;
     body.innerHTML = `
       <div class="badge-name">${escapeHtml(name)} ${status}</div>
+      <div class="badge-rule">${t('badgeRule')}</div>
       <div class="badge-count">${t('viewedBooths', { count, required })}</div>
       <div class="progress"><div class="progress-fill" style="width:${pct}%"></div></div>`;
   }

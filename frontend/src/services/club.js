@@ -1,7 +1,7 @@
 /** services/club.js — 社团业务（只读） */
 import * as mock from '../data/mock.js';
 
-const CATEGORIES = ['全部', '学术', '科技', '艺术', '体育', '志愿'];
+const CATEGORIES = ['全部', '实践体验类', '学术科技类', '体育运动类', '文化艺术类', '学生组织'];
 
 async function getClubs({ category = '', keyword = '', page = 1, pageSize = 20 } = {}) {
   const boothMap = {};

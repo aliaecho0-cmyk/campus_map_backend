@@ -1,4 +1,4 @@
-/** pages/map/tutorial-steps.js — 首页五步游戏化新手指引。 */
+/** pages/map/tutorial-steps.js — 首页六步游戏化新手指引。 */
 import { isEnglish } from '../../i18n.js';
 
 const TUTORIAL_KEY = 'onboardingCompleted';
@@ -35,6 +35,12 @@ const STEPS_ZH = [
     title: '今日活动',
     message: '点击「活动」，就能看看今天有哪些活动正在开展！',
   },
+  {
+    key: 'tab_reward',
+    target: 'tabReward',
+    title: '获取奖励',
+    message: '怎样才能获取奖励？快来探索把！',
+  },
 ];
 
 const STEPS_EN = [
@@ -67,6 +73,12 @@ const STEPS_EN = [
     target: 'tabActivity',
     title: 'Today’s Events',
     message: 'Tap Events to see what is happening today.',
+  },
+  {
+    key: 'tab_reward',
+    target: 'tabReward',
+    title: 'Earn Rewards',
+    message: 'How can you earn rewards? Start exploring to find out!',
   },
 ];
 

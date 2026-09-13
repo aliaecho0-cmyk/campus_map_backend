@@ -29,6 +29,10 @@
   margin-bottom: 12px;
 }
 
+.reward-page .badge-progress-card {
+  padding: 16px 14px 15px;
+}
+
 .reward-empty {
   font-size: 13px;
   color: var(--text-color-secondary);
@@ -55,6 +59,17 @@
 .badge-status.ok {
   background: var(--pal-deep);
   color: var(--pal-white);
+}
+.badge-rule {
+  margin: 10px 0;
+  padding: 8px 9px 8px 11px;
+  border-left: 4px solid var(--pal-deep);
+  background: var(--primary-light);
+  color: var(--text-color-regular);
+  font-family: var(--font-px);
+  font-size: 11px;
+  line-height: 1.65;
+  letter-spacing: 0.3px;
 }
 .badge-count {
   font-size: 13px;

@@ -11,8 +11,10 @@ const UI = {
     announcement: '公告', acknowledge: '知道了', booth: '摊位 {id}',
     boothStatus: '摊位 {id} · {status}', noSearchResults: '未找到匹配的社团',
     all: '全部', academic: '学术', tech: '科技', art: '艺术', sport: '体育', volunteer: '志愿',
+    practicalExperience: '实践体验类', academicTechnology: '学术科技类', sportsClubs: '体育运动类',
+    cultureArt: '文化艺术类', studentOrganizations: '学生组织',
     open: '营业中', break: '休息中', closed: '已收摊',
-    totalClubs: '共 {count} 个社团', viewOnMap: '在地图查看',
+    totalClubs: '共 {count} 个摊位', viewOnMap: '在地图查看',
     noClubs: '暂无社团，换个分类或关键词试试', noDescription: '暂无简介',
     clubDetails: '社团详情', clubProfile: '社团简介', boothLocation: '摊位位置',
     boothNumber: '摊位号 {id}', mapView: '地图查看', clubMissing: '社团不存在',
@@ -24,11 +26,12 @@ const UI = {
     tutorialHint: '★ 新手提示', tutorialPrevious: '◀ 上一步',
     tutorialNext: '下一步 ▶', startExploring: '开始探索 ▶',
     confirm: '确定', cancel: '取消', loadingEllipsis: '加载中…',
-    pauseRecord: '暂停唱片', resumeRecord: '继续播放唱片', notProvided: '未提供',
+    pauseRecord: '暂停唱片', resumeRecord: '继续播放唱片', replayTutorial: '重新播放新手教程', notProvided: '未提供',
     copyEmail: '复制邮箱', emailCopied: '已复制', copyFailed: '复制失败',
 
     reward: '奖励', redeem: '核销',
     badgeProgress: '徽章进度', claimReward: '奖励领取',
+    badgeRule: '规则：首页点击格子/点进社团详情页后，停留三秒，算作“浏览摊位 +1”的计数。',
     badgeUnlocked: '已解锁', badgeFallback: '徽章',
     viewedBooths: '已浏览 {count} / {required} 个摊位',
     claimable: '可领取', claimed: '已首签', redeemed: '已核销',
@@ -72,8 +75,10 @@ const UI = {
     announcement: 'Notice', acknowledge: 'Got it', booth: 'Booth {id}',
     boothStatus: 'Booth {id} · {status}', noSearchResults: 'No matching clubs found',
     all: 'All', academic: 'Academic', tech: 'Technology', art: 'Arts', sport: 'Sports', volunteer: 'Community',
+    practicalExperience: 'Practical Experience Clubs', academicTechnology: 'Academic & Science-Technology Clubs',
+    sportsClubs: 'Sports Clubs', cultureArt: 'Culture & Art Clubs', studentOrganizations: 'Student Organizations',
     open: 'Open', break: 'On Break', closed: 'Closed',
-    totalClubs: '{count} clubs', viewOnMap: 'View on Map',
+    totalClubs: '{count} booths', viewOnMap: 'View on Map',
     noClubs: 'No clubs found. Try another category or keyword.', noDescription: 'No description available.',
     clubDetails: 'Club Details', clubProfile: 'Club Profile', boothLocation: 'Booth Location',
     boothNumber: 'Booth {id}', mapView: 'View on Map', clubMissing: 'Club not found',
@@ -85,11 +90,12 @@ const UI = {
     tutorialHint: '★ Rookie Guide', tutorialPrevious: '◀ Previous',
     tutorialNext: 'Next ▶', startExploring: 'Start Exploring ▶',
     confirm: 'Confirm', cancel: 'Cancel', loadingEllipsis: 'Loading…',
-    pauseRecord: 'Pause record', resumeRecord: 'Resume record', notProvided: 'Not provided',
+    pauseRecord: 'Pause record', resumeRecord: 'Resume record', replayTutorial: 'Replay rookie guide', notProvided: 'Not provided',
     copyEmail: 'Copy email', emailCopied: 'Copied', copyFailed: 'Copy failed',
 
     reward: 'Rewards', redeem: 'Redeem',
     badgeProgress: 'Badge Progress', claimReward: 'Claim Reward',
+    badgeRule: 'Rule: Tap a grid tile on the home page or open a club detail page and stay for three seconds to count as “Booth viewed +1”.',
     badgeUnlocked: 'Unlocked', badgeFallback: 'Badge',
     viewedBooths: 'Viewed {count} / {required} booths',
     claimable: 'Claimable', claimed: 'Claimed', redeemed: 'Redeemed',
@@ -239,7 +245,11 @@ const BADGE_EN = {
   knowitall: 'Know-It-All',
 };
 
-const CATEGORY_KEYS = { 学术: 'academic', 科技: 'tech', 艺术: 'art', 体育: 'sport', 志愿: 'volunteer' };
+const CATEGORY_KEYS = {
+  学术: 'academic', 科技: 'tech', 艺术: 'art', 体育: 'sport', 志愿: 'volunteer',
+  实践体验类: 'practicalExperience', 学术科技类: 'academicTechnology', 体育运动类: 'sportsClubs',
+  文化艺术类: 'cultureArt', 学生组织: 'studentOrganizations',
+};
 const STATUS_KEYS = { open: 'open', break: 'break', closed: 'closed' };
 
 function setLanguage(next) {

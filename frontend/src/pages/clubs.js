@@ -9,8 +9,9 @@ import { buildMatch } from '../utils/search.js';
 import { categoryText, isEnglish, localizeClub, statusText, t } from '../i18n.js';
 
 const CAT_KEY_MAP = {
-  学术: 'academic', 艺术: 'art', 体育: 'sport', 科技: 'tech', 志愿: 'volunteer',
-  Academic: 'academic', Arts: 'art', Sports: 'sport', Technology: 'tech', Community: 'volunteer',
+  实践体验类: 'tech', 学术科技类: 'academic', 体育运动类: 'sport', 文化艺术类: 'art', 学生组织: 'volunteer',
+  'Practical Experience Clubs': 'tech', 'Academic & Science-Technology Clubs': 'academic',
+  'Sports Clubs': 'sport', 'Culture & Art Clubs': 'art', 'Student Organizations': 'volunteer',
 };
 
 function escapeHtml(s) {

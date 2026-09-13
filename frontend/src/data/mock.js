@@ -8,7 +8,7 @@
  * - zone     ：热力区域聚合维度（plaza / west-corridor / east-corridor / pool-edge / north-corridor / south-corridor）
  *
  * 社团数据：基础资料沿用既有内容，摊位号与坐标以最新规划表为准。
- * - 5 分类：学术 / 科技 / 艺术 / 体育 / 志愿
+ * - 5 分类：实践体验类 / 学术科技类 / 体育运动类 / 文化艺术类 / 学生组织
  * - 每社含摊位号、名称、类别、坐标 X/Y、一句话简介、社团简介、集章游戏规则
  * - X/Y 为 30×30 网格直接坐标，mapX = x + 0.5（格中心）
  *
@@ -161,7 +161,7 @@ const CLUB_DATA = [
   { num: 55, name: 'Respecx 青春健康同伴社', category: '志愿', x: 19, y: 16, slogan: '尊重身体，珍视健康', intro: 'Respecx是一个以青少年性与生殖健康为主题的同伴教育志愿社团。我们通过趣味游戏与开放讨论，科普生理卫生、性别平等与安全防护知识，提供科学、友善、不评判的健康支持。', gameRules: '回答一道青春健康知识题（选择题，如“以下哪种是有效避孕方式”），答对即盖章。' },
   { num: 61, name: '客属联谊会', category: '志愿', x: 16, y: 17, slogan: '客家情，四海一家亲', intro: '客属联谊会是一个以客家文化传承与客属学子互助为宗旨的社团。我们组织客家文化体验活动、方言趣味课堂与客属学子帮扶计划，也积极参与校际客家文化交流。', gameRules: '跟社员学一句客家话日常用语（如“你好”“食饱吂”），当场复读发音基本正确即盖章。' },
   // ── 补录（原缺编号 20/27）──
-  { num: 20, name: '桌游社', category: '艺术', x: 4, y: 8, slogan: '（待补）', intro: '桌游社简介待补充。', gameRules: '集章规则待补充。' },
+  { num: 20, name: '桌游社', category: '艺术', x: 4, y: 8, slogan: '以桌游会友，在欢乐中锻炼逻辑与沟通', intro: '桌游社简介待补充。', gameRules: '集章规则待补充。' },
   { num: 27, name: 'SPC主摊位', category: '志愿', x: 3, y: 19, slogan: '（待补）', intro: 'SPC主摊位简介待补充。', gameRules: '集章规则待补充。' },
 ];
 
@@ -267,15 +267,49 @@ const PLAN_NAME_ALIASES = {
   'CP 食研社': 'CP食研社',
 };
 
+/** 分类以《摊位信息（中英文）.xlsx》工作表1的连续分组为准。 */
+const BOOTH_CATEGORY_GROUPS = {
+  实践体验类: [
+    'CP 食研社', '尚饮社', '淇奥手创社', '锦灰社', '颜究所', '唯在设计', '“沉浸人生”推理协会',
+    '桌游社', 'PIC摄影社', '校园媒体人', '电影俱乐部', '趣旅行', 'English Animator', '粤语社',
+  ],
+  学术科技类: [
+    '机智协会', '数独社', '天文社', '交通社', '模拟联合国协会', '万寿模型社',
+    '睡眠社', '醉红学', '人文历史社', 'TEDxCUHKSZ', '客属联谊会', '奇点科幻社',
+  ],
+  体育运动类: [
+    '武联社', '酷滑社', '手极社', '跑步社', '乒乓球社', '极限飞盘协会', 'Lg足球社', '健身社',
+    '排球社', 'ACE网球社', '电竞社', '击剑社', '台球社', '游泳社', '高尔夫社', 'V8橄榄球俱乐部',
+    '2Tired骑行社', '攀岩社', '棒球社', '羽毛球社', '弈秋棋社', 'LGUBA篮球社', '匹克球社', '桥牌社',
+  ],
+  文化艺术类: [
+    '魅影戏剧社', '精舞团', '凤凰漫研社', '聚乐部', '南露书法社', '鹿鸣配音社', '电音社',
+    '自说自话脱口秀社', '涤纶诗社', '戏曲社', '掬月社', '润泽书社', 'Encore音乐剧社', 'HIPHOP音乐社',
+  ],
+  学生组织: [
+    'SPC主摊位', '微光公益', '知津公益剧社', '城市特派队', '分类大师', '国际学生协会',
+    '国旗护卫队', '英辩队', '金融工程学会', '学生大使团', '化学协会', '新能源学会',
+    '游戏研究社', '物理学会', '计算机协会', 'IEA投资启蒙协会', '经管头马演讲俱乐部',
+    '逸夫青年研习社', '青年会', 'uBuddies', '生物科学学会', 'TIDE Club',
+    'Respecx 青春健康同伴社', '研究生会',
+  ],
+};
+
+const boothCategoryByName = new Map(
+  Object.entries(BOOTH_CATEGORY_GROUPS)
+    .flatMap(([category, names]) => names.map((name) => [name, category])),
+);
+
 const clubDataByName = new Map(CLUB_DATA.map((club) => [club.name, club]));
 const latestClubData = LATEST_BOOTH_PLAN.map(([num, name, x, y]) => {
   const source = clubDataByName.get(PLAN_NAME_ALIASES[name] || name);
   const latestInfo = BOOTH_INFO[name] || {};
-  if (source) return { ...source, ...latestInfo, num, name, x, y };
+  const category = boothCategoryByName.get(name);
+  if (source) return { ...source, ...latestInfo, num, name, x, y, category: category || source.category };
   return {
     num,
     name,
-    category: '志愿',
+    category: category || '学生组织',
     x,
     y,
     slogan: '研究生事务与校园服务',
