@@ -24,8 +24,8 @@ export class TabBar {
       { path: '#/clubs', text: t('clubs') },
       { path: '#/events', text: t('events') },
       isStaffRole()
-        ? { path: '#/staff/redeem', text: '核销' }
-        : { path: '#/reward', text: '奖励' },
+        ? { path: '#/staff/redeem', text: t('redeem') }
+        : { path: '#/reward', text: t('reward') },
     ];
     this.el.innerHTML = '';
     const bar = document.createElement('div');

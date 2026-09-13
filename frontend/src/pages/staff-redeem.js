@@ -11,6 +11,7 @@
 import './staff.css';
 import { Html5Qrcode } from 'html5-qrcode';
 import { redeemClaimToken, getMe, clearAuthToken } from '../services/api.js';
+import { t } from '../i18n.js';
 
 const USER_ROLE_KEY = 'user_role';
 const USER_KEY = 'auth_user';
@@ -50,7 +51,7 @@ class StaffRedeemPage {
     this.identityInvalid = false;
 
     if (!isStaffRole()) {
-      container.innerHTML = '<div class="page staff-page"><div class="staff-msg">无权访问，即将返回主页</div></div>';
+      container.innerHTML = `<div class="page staff-page"><div class="staff-msg">${t('noAccess')}</div></div>`;
       this.timer = setTimeout(() => {
         if (!this.destroyed) location.hash = '#/map';
       }, 1200);
@@ -59,7 +60,7 @@ class StaffRedeemPage {
 
     container.innerHTML = `
       <div class="page staff-redeem">
-        <div class="redeem-staff">工作人员：<span class="redeem-staff-name">…</span></div>
+        <div class="redeem-staff">${t('staffLabel')}<span class="redeem-staff-name">…</span></div>
         <div class="redeem-scan"><div id="qr-reader"></div></div>
         <div class="redeem-result"></div>
       </div>`;
@@ -92,7 +93,7 @@ class StaffRedeemPage {
     clearAuthToken();
     lsRemove(USER_KEY);
     lsRemove(USER_ROLE_KEY);
-    this.showResult('登录已失效，即将返回主页，请重新用工作台链接进入', false);
+    this.showResult(t('loginExpired'), false);
     this.stopScanner();
     this.timer = setTimeout(() => {
       if (!this.destroyed) location.hash = '#/map';
@@ -114,7 +115,7 @@ class StaffRedeemPage {
       );
     } catch (e) {
       if (this.destroyed) return;
-      this.showResult('无法启动摄像头，请检查权限或使用 HTTPS/localhost', false);
+      this.showResult(t('cameraError'), false);
       return;
     }
     // start() 期间身份可能已被判定失效
@@ -142,11 +143,11 @@ class StaffRedeemPage {
     try {
       if (this.scanner) this.scanner.pause();
     } catch {}
-    this.showResult('核销中…');
+    this.showResult(t('redeeming'));
     try {
       await redeemClaimToken(String(token).trim());
       if (this.destroyed) return;
-      this.showResult('核销成功', true);
+      this.showResult(t('redeemSuccess'), true);
     } catch (e) {
       if (this.destroyed) return;
       if (e && (e.code === 'AUTH_REQUIRED' || e.code === 'INVALID_TOKEN' || e.code === 'STAFF_REQUIRED')) {
@@ -154,7 +155,7 @@ class StaffRedeemPage {
         this.handleIdentityInvalid();
         return;
       }
-      this.showResult((e && e.message) || '核销失败，请重试', false);
+      this.showResult((e && e.message) || t('redeemFail'), false);
     }
     this.busy = false;
     this.timer = setTimeout(() => {
@@ -184,4 +185,4 @@ class StaffRedeemPage {
   }
 }
 
-export default { title: '扫码核销', mount: (c) => new StaffRedeemPage().mount(c) };
+export default { title: () => t('scanRedeem'), mount: (c) => new StaffRedeemPage().mount(c) };

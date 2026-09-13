@@ -11,6 +11,7 @@
 
 import { getAuthToken, clearAuthToken, studentLogin } from './api.js';
 import { state } from '../state.js';
+import { t } from '../i18n.js';
 
 /** localStorage key */
 const DEVICE_ID_KEY = 'device_id';
@@ -167,7 +168,7 @@ export function ensureLogin() {
       return (state && state.user) || null;
     } catch (e) {
       if (e && e.code && NOTICEABLE_CODES.has(e.code)) {
-        showNotice(e.message || '网络异常，请稍后重试');
+        showNotice(e.message || t('networkError'));
       }
       return null;
     } finally {

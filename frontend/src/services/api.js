@@ -10,6 +10,7 @@
  *
  * 对应后端契约：backend/docs/API.md（v1.0）
  */
+import { t } from '../i18n.js';
 
 /** 后端基础地址。
  * - 开发（未设置 VITE_API_BASE）：默认打本地 3000。
@@ -22,21 +23,18 @@ export const BASE_URL = __configuredBase === undefined || __configuredBase === n
 /** localStorage 中 JWT 的存储 key */
 const TOKEN_KEY = 'auth_token';
 
-/** 网络/未知错误使用的兜底文案 */
-const DEFAULT_MESSAGE = '网络异常，请稍后重试';
-
-/** 错误码 → 中文提示（对应 API 契约 §1.4 通用错误码） */
-const ERROR_MESSAGES = {
-  INVALID_REQUEST: '请求参数错误',
-  AUTH_REQUIRED: '未登录，请携带 JWT',
-  INVALID_TOKEN: 'JWT 无效或已过期',
-  STAFF_REQUIRED: '需要工作人员权限',
-  BADGE_NOT_UNLOCKED: '未解锁 knowitall，无法操作',
-  EVENT_NOT_FOUND: '活动不存在',
-  CLAIM_TOKEN_NOT_FOUND: '领取码不存在',
-  EVENT_NOT_ACTIVE: '活动当前不可用',
-  CLAIM_TOKEN_EXPIRED: '已超过活动截止时间',
-  CLAIM_TOKEN_REDEEMED: '领取码已经核销',
+/** 错误码 → i18n key（对应 API 契约 §1.4 通用错误码） */
+const ERROR_KEYS = {
+  INVALID_REQUEST: 'err_INVALID_REQUEST',
+  AUTH_REQUIRED: 'err_AUTH_REQUIRED',
+  INVALID_TOKEN: 'err_INVALID_TOKEN',
+  STAFF_REQUIRED: 'err_STAFF_REQUIRED',
+  BADGE_NOT_UNLOCKED: 'err_BADGE_NOT_UNLOCKED',
+  EVENT_NOT_FOUND: 'err_EVENT_NOT_FOUND',
+  CLAIM_TOKEN_NOT_FOUND: 'err_CLAIM_TOKEN_NOT_FOUND',
+  EVENT_NOT_ACTIVE: 'err_EVENT_NOT_ACTIVE',
+  CLAIM_TOKEN_EXPIRED: 'err_CLAIM_TOKEN_EXPIRED',
+  CLAIM_TOKEN_REDEEMED: 'err_CLAIM_TOKEN_REDEEMED',
 };
 
 /**
@@ -46,7 +44,7 @@ const ERROR_MESSAGES = {
 export class ApiError extends Error {
   /**
    * @param {string} code 后端错误码（网络异常时为 'NETWORK_ERROR'）
-   * @param {string} message 人类可读的中文提示
+   * @param {string} message 人类可读的提示（随界面语言）
    * @param {number} [status] HTTP 状态码（网络异常时无）
    */
   constructor(code, message, status) {
@@ -121,7 +119,7 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
     response = await fetch(BASE_URL + path, options);
   } catch {
     // fetch 层面失败（断网 / CORS / 后端未启动）统一抛出
-    throw new ApiError('NETWORK_ERROR', DEFAULT_MESSAGE);
+    throw new ApiError('NETWORK_ERROR', t('networkError'));
   }
 
   let data = null;
@@ -134,7 +132,7 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
   if (!response.ok) {
     const code = data && data.error ? data.error.code : undefined;
     const serverMsg = data && data.error ? data.error.message : undefined;
-    const message = code ? ERROR_MESSAGES[code] || serverMsg || DEFAULT_MESSAGE : DEFAULT_MESSAGE;
+    const message = code && ERROR_KEYS[code] ? t(ERROR_KEYS[code]) : serverMsg || t('networkError');
     throw new ApiError(code || `HTTP_${response.status}`, message, response.status);
   }
 
@@ -246,5 +244,5 @@ export function redeemClaimToken(claimToken) {
   });
 }
 
-/** 导出错误码 → 中文文案映射（供展示层按需使用） */
-export const ERROR_CODE_MESSAGES = ERROR_MESSAGES;
+/** 导出错误码 → i18n key 映射（供展示层按需使用） */
+export const ERROR_CODE_KEYS = ERROR_KEYS;

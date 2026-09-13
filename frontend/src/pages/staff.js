@@ -9,6 +9,7 @@
 import './staff.css';
 import { staffLogin } from '../services/api.js';
 import { wx } from '../adapter/wx.js';
+import { t } from '../i18n.js';
 
 const USER_ROLE_KEY = 'user_role';
 const USER_KEY = 'auth_user';
@@ -26,16 +27,16 @@ class StaffPage {
     this.code = (query && query.code) || '';
 
     if (!this.code) {
-      container.innerHTML = '<div class="page staff-page"><div class="staff-msg">链接无效，请联系管理员</div></div>';
+      container.innerHTML = `<div class="page staff-page"><div class="staff-msg">${t('invalidLink')}</div></div>`;
       return this;
     }
 
     container.innerHTML = `
       <div class="page staff-page">
         <div class="card staff-login">
-          <div class="staff-title">工作人员登录</div>
-          <input class="staff-input" type="text" placeholder="请输入姓名" autocomplete="name" />
-          <button class="btn-primary staff-submit" type="button">登录</button>
+          <div class="staff-title">${t('staffLogin')}</div>
+          <input class="staff-input" type="text" placeholder="${t('enterName')}" autocomplete="name" />
+          <button class="btn-primary staff-submit" type="button">${t('login')}</button>
           <div class="staff-error"></div>
         </div>
       </div>`;
@@ -55,7 +56,7 @@ class StaffPage {
     const name = (this.input.value || '').trim();
     this.error.textContent = '';
     if (!name) {
-      this.error.textContent = '请输入姓名';
+      this.error.textContent = t('enterName');
       return;
     }
     this.submit.disabled = true;
@@ -68,8 +69,8 @@ class StaffPage {
     } catch (e) {
       if (this.destroyed) return;
       this.submit.disabled = false;
-      if (e && e.code === 'AUTH_REQUIRED') this.error.textContent = '识别码或姓名错误，请确认后重试';
-      else this.error.textContent = (e && e.message) || '网络异常，请稍后重试';
+      if (e && e.code === 'AUTH_REQUIRED') this.error.textContent = t('codeNameError');
+      else this.error.textContent = (e && e.message) || t('networkError');
     }
   }
 
@@ -79,4 +80,4 @@ class StaffPage {
   }
 }
 
-export default { title: '工作人员登录', mount: (c, q) => new StaffPage().mount(c, q) };
+export default { title: () => t('staffLogin'), mount: (c, q) => new StaffPage().mount(c, q) };

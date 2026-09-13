@@ -7,6 +7,7 @@
  */
 import './reward.css';
 import { getRewardStatus, getClaimToken } from '../services/api.js';
+import { localizeBadge, t } from '../i18n.js';
 import { getEventEndAt } from '../services/auth.js';
 import { setOnProgressChanged } from '../services/boothView.js';
 import QRCode from 'qrcode';
@@ -24,17 +25,17 @@ function formatCountdown(endAtIso) {
   const SIX_HOURS = 6 * 60 * 60 * 1000;
   let ms = end - SIX_HOURS - Date.now();
 
-  if (ms <= 0) return '活动已结束';
+  if (ms <= 0) return t('eventEnded');
   const days = Math.floor(ms / 86400000);
   ms -= days * 86400000;
   const hours = Math.floor(ms / 3600000);
   ms -= hours * 3600000;
   const mins = Math.floor(ms / 60000);
-  return `距离活动结束还有 ${days} 天 ${hours} 小时 ${mins} 分`;
+  return t('countdown', { days, hours, mins });
 }
 
-/** claimStatus → 文案 */
-const CLAIM_LABEL = { none: '可领取', active: '已首签', redeemed: '已核销', expired: '活动已结束' };
+/** claimStatus → i18n key */
+const CLAIM_LABEL_KEY = { none: 'claimable', active: 'claimed', redeemed: 'redeemed', expired: 'eventEnded' };
 
 class RewardPage {
   mount(container) {
@@ -47,11 +48,11 @@ class RewardPage {
       <div class="page reward-page">
         <div class="countdown-box"></div>
         <section class="card reward-card">
-          <div class="card-title">徽章进度</div>
+          <div class="card-title">${t('badgeProgress')}</div>
           <div class="badge-body"></div>
         </section>
         <section class="card reward-card">
-          <div class="card-title">奖励领取</div>
+          <div class="card-title">${t('claimReward')}</div>
           <div class="claim-body"></div>
         </section>
       </div>`;
@@ -66,7 +67,7 @@ class RewardPage {
     if (this.destroyed) return;
     const box = this.el.querySelector('.countdown-box');
     if (!box) return;
-    box.textContent = formatCountdown(this.eventEndAt) || '活动时间待定';
+    box.textContent = formatCountdown(this.eventEndAt) || t('eventTimePending');
   }
 
   async refresh() {
@@ -95,21 +96,22 @@ class RewardPage {
     if (this.destroyed) return;
     const body = this.el.querySelector('.badge-body');
     if (!body) return;
-    const b = this.badge;
+    const b = localizeBadge(this.badge);
     if (err || !b) {
-      const msg = err ? (err && err.message) || '网络异常，请稍后重试' : '加载中…';
+      const msg = err ? (err && err.message) || t('networkError') : t('loading');
       body.innerHTML = `<div class="reward-empty">${escapeHtml(msg)}</div>`;
       return;
     }
     const required = b.requiredUniqueBooths || 0;
     const count = b.uniqueBoothCount || 0;
     const pct = required > 0 ? Math.min(100, Math.round((count / required) * 100)) : 0;
+    const name = b.name || t('badgeFallback');
     const status = b.unlocked
-      ? '<span class="badge-status ok">已解锁</span>'
-      : `<span class="badge-status">${escapeHtml(b.name || '徽章')}</span>`;
+      ? `<span class="badge-status ok">${t('badgeUnlocked')}</span>`
+      : `<span class="badge-status">${escapeHtml(name)}</span>`;
     body.innerHTML = `
-      <div class="badge-name">${escapeHtml(b.name || '徽章')} ${status}</div>
-      <div class="badge-count">已浏览 ${count} / ${required} 个摊位</div>
+      <div class="badge-name">${escapeHtml(name)} ${status}</div>
+      <div class="badge-count">${t('viewedBooths', { count, required })}</div>
       <div class="progress"><div class="progress-fill" style="width:${pct}%"></div></div>`;
   }
 
@@ -118,37 +120,38 @@ class RewardPage {
     const body = this.el.querySelector('.claim-body');
     if (!body) return;
     if (err) {
-      body.innerHTML = `<div class="reward-empty">${escapeHtml((err && err.message) || '网络异常，请稍后重试')}</div>`;
+      body.innerHTML = `<div class="reward-empty">${escapeHtml((err && err.message) || t('networkError'))}</div>`;
       return;
     }
     const b = this.badge;
     if (!b) {
-      body.innerHTML = '<div class="reward-empty">加载中…</div>';
+      body.innerHTML = `<div class="reward-empty">${t('loading')}</div>`;
       return;
     }
     if (!b.unlocked) {
-      body.innerHTML = '<div class="reward-empty">继续浏览摊位，集满进度后可领取奖励</div>';
+      body.innerHTML = `<div class="reward-empty">${t('keepBrowsing')}</div>`;
       return;
     }
     const r = this.reward;
     const status = r ? r.claimStatus : 'none';
     if (status === 'none') {
       body.innerHTML = `
-        <button class="btn-primary claim-btn" type="button">可领取</button>
-        <div class="claim-hint">已解锁，点击领取你的奖励券</div>`;
+        <button class="btn-primary claim-btn" type="button">${t('claimable')}</button>
+        <div class="claim-hint">${t('claimHint')}</div>`;
       body.querySelector('.claim-btn').addEventListener('click', () => this.onClaim());
     } else if (status === 'active') {
       const token = (r && r.claimToken) || '';
       body.innerHTML = `
         <div class="voucher">
-          <div class="voucher-label">奖励券</div>
-          <div class="voucher-qr"><img class="qr-img" alt="领取码二维码" /></div>
+          <div class="voucher-label">${t('voucher')}</div>
+          <div class="voucher-qr"><img class="qr-img" alt="${t('qrAlt')}" /></div>
           <div class="voucher-code">${escapeHtml(token)}</div>
-          <div class="voucher-note">出示本券由工作人员核销</div>
+          <div class="voucher-note">${t('voucherNote')}</div>
         </div>`;
       this.renderQr(body.querySelector('.qr-img'), token);
     } else {
-      body.innerHTML = `<div class="claim-state">${CLAIM_LABEL[status] || status}</div>`;
+      const label = CLAIM_LABEL_KEY[status] ? t(CLAIM_LABEL_KEY[status]) : status;
+      body.innerHTML = `<div class="claim-state">${label}</div>`;
     }
   }
 
@@ -192,4 +195,4 @@ class RewardPage {
   }
 }
 
-export default { title: '奖励', mount: (c) => new RewardPage().mount(c) };
+export default { title: () => t('reward'), mount: (c) => new RewardPage().mount(c) };

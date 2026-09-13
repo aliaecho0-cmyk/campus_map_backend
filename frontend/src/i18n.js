@@ -26,6 +26,39 @@ const UI = {
     confirm: '确定', cancel: '取消', loadingEllipsis: '加载中…',
     pauseRecord: '暂停唱片', resumeRecord: '继续播放唱片', notProvided: '未提供',
     copyEmail: '复制邮箱', emailCopied: '已复制', copyFailed: '复制失败',
+
+    reward: '奖励', redeem: '核销',
+    badgeProgress: '徽章进度', claimReward: '奖励领取',
+    badgeUnlocked: '已解锁', badgeFallback: '徽章',
+    viewedBooths: '已浏览 {count} / {required} 个摊位',
+    claimable: '可领取', claimed: '已首签', redeemed: '已核销',
+    eventEnded: '活动已结束', eventTimePending: '活动时间待定',
+    countdown: '距离活动结束还有 {days} 天 {hours} 小时 {mins} 分',
+    keepBrowsing: '继续浏览摊位，集满进度后可领取奖励',
+    claimHint: '已解锁，点击领取你的奖励券',
+    voucher: '奖励券', qrAlt: '领取码二维码',
+    voucherNote: '出示本券由工作人员核销',
+
+    staffLogin: '工作人员登录', enterName: '请输入姓名', login: '登录',
+    invalidLink: '链接无效，请联系管理员',
+    codeNameError: '识别码或姓名错误，请确认后重试',
+    scanRedeem: '扫码核销', staffLabel: '工作人员：',
+    noAccess: '无权访问，即将返回主页',
+    loginExpired: '登录已失效，即将返回主页，请重新用工作台链接进入',
+    cameraError: '无法启动摄像头，请检查权限或使用 HTTPS/localhost',
+    redeeming: '核销中…', redeemSuccess: '核销成功', redeemFail: '核销失败，请重试',
+
+    networkError: '网络异常，请稍后重试',
+    err_INVALID_REQUEST: '请求参数错误',
+    err_AUTH_REQUIRED: '未登录，请携带 JWT',
+    err_INVALID_TOKEN: 'JWT 无效或已过期',
+    err_STAFF_REQUIRED: '需要工作人员权限',
+    err_BADGE_NOT_UNLOCKED: '未解锁 knowitall，无法操作',
+    err_EVENT_NOT_FOUND: '活动不存在',
+    err_CLAIM_TOKEN_NOT_FOUND: '领取码不存在',
+    err_EVENT_NOT_ACTIVE: '活动当前不可用',
+    err_CLAIM_TOKEN_EXPIRED: '已超过活动截止时间',
+    err_CLAIM_TOKEN_REDEEMED: '领取码已经核销',
   },
   en: {
     appTitle: 'Clubs Fair · Event Guide',
@@ -51,6 +84,39 @@ const UI = {
     confirm: 'Confirm', cancel: 'Cancel', loadingEllipsis: 'Loading…',
     pauseRecord: 'Pause record', resumeRecord: 'Resume record', notProvided: 'Not provided',
     copyEmail: 'Copy email', emailCopied: 'Copied', copyFailed: 'Copy failed',
+
+    reward: 'Rewards', redeem: 'Redeem',
+    badgeProgress: 'Badge Progress', claimReward: 'Claim Reward',
+    badgeUnlocked: 'Unlocked', badgeFallback: 'Badge',
+    viewedBooths: 'Viewed {count} / {required} booths',
+    claimable: 'Claimable', claimed: 'Claimed', redeemed: 'Redeemed',
+    eventEnded: 'Event ended', eventTimePending: 'Event time TBD',
+    countdown: '{days}d {hours}h {mins}m until the event ends',
+    keepBrowsing: 'Keep visiting booths — unlock the reward once progress is full.',
+    claimHint: 'Unlocked! Tap to claim your reward voucher.',
+    voucher: 'Reward Voucher', qrAlt: 'Claim code QR',
+    voucherNote: 'Show this voucher to staff for redemption',
+
+    staffLogin: 'Staff Login', enterName: 'Enter your name', login: 'Log in',
+    invalidLink: 'Invalid link, please contact the administrator',
+    codeNameError: 'Wrong access code or name, please try again',
+    scanRedeem: 'Scan to Redeem', staffLabel: 'Staff: ',
+    noAccess: 'No access, returning to home',
+    loginExpired: 'Session expired, returning to home — please re-enter from the staff link',
+    cameraError: 'Cannot start the camera. Check permissions or use HTTPS/localhost',
+    redeeming: 'Redeeming…', redeemSuccess: 'Redeemed successfully', redeemFail: 'Redemption failed, please retry',
+
+    networkError: 'Network error, please try again later',
+    err_INVALID_REQUEST: 'Invalid request parameters',
+    err_AUTH_REQUIRED: 'Not signed in, JWT required',
+    err_INVALID_TOKEN: 'Invalid or expired JWT',
+    err_STAFF_REQUIRED: 'Staff permission required',
+    err_BADGE_NOT_UNLOCKED: 'knowitall not unlocked',
+    err_EVENT_NOT_FOUND: 'Event not found',
+    err_CLAIM_TOKEN_NOT_FOUND: 'Claim code not found',
+    err_EVENT_NOT_ACTIVE: 'Event is not available',
+    err_CLAIM_TOKEN_EXPIRED: 'Past the event deadline',
+    err_CLAIM_TOKEN_REDEEMED: 'Claim code already redeemed',
   },
 };
 
@@ -162,6 +228,11 @@ const ANNOUNCEMENT_EN = {
   },
 };
 
+/** 徽章名英文（后端 badges.name 为中文，按 code 映射） */
+const BADGE_EN = {
+  knowitall: 'Know-It-All',
+};
+
 const CATEGORY_KEYS = { 学术: 'academic', 科技: 'tech', 艺术: 'art', 体育: 'sport', 志愿: 'volunteer' };
 const STATUS_KEYS = { open: 'open', break: 'break', closed: 'closed' };
 
@@ -243,6 +314,11 @@ function localizeAnnouncement(announcement) {
   return { ...announcement, ...(ANNOUNCEMENT_EN[announcement.id] || {}) };
 }
 
+function localizeBadge(badge) {
+  if (!isEnglish() || !badge) return badge;
+  return { ...badge, name: BADGE_EN[badge.code] || badge.name };
+}
+
 export {
   setLanguage,
   getLanguage,
@@ -254,4 +330,5 @@ export {
   localizeClub,
   localizeEvent,
   localizeAnnouncement,
+  localizeBadge,
 };
