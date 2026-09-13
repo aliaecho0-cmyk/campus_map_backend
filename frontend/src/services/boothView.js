@@ -1,5 +1,6 @@
 import { recordBoothView } from './api.js';
 import { showToast } from '../utils/toast.js';
+import { t } from '../i18n.js';
 
 const EVENT_ID = 1;
 const REPORTED_KEY = 'reported_booths';
@@ -65,8 +66,8 @@ export function startViewSession(boothId, delayMs = 3000) {
     const count = successData.uniqueBoothCount || 0;
     const badge = (successData.badges || []).find((b) => b.code === 'knowitall');
     const required = (badge && badge.requiredUniqueBooths) || 0;
-    if (badge && count === required) showToast('摊位收集任务已完成，可领取奖励');
-    else if (count < required) showToast('摊位收集 +1');
+    if (badge && count === required) showToast(t('collectComplete'));
+    else if (count < required) showToast(t('collectPlusOne'));
     if (onProgressChanged) onProgressChanged(successData);
   }
 

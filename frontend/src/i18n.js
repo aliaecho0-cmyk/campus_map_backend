@@ -39,6 +39,9 @@ const UI = {
     voucher: '奖励券', qrAlt: '领取码二维码',
     voucherNote: '出示本券由工作人员核销',
 
+    collectPlusOne: '摊位收集 +1',
+    collectComplete: '摊位收集任务已完成，可领取奖励',
+
     staffLogin: '工作人员登录', enterName: '请输入姓名', login: '登录',
     invalidLink: '链接无效，请联系管理员',
     codeNameError: '识别码或姓名错误，请确认后重试',
@@ -96,6 +99,9 @@ const UI = {
     claimHint: 'Unlocked! Tap to claim your reward voucher.',
     voucher: 'Reward Voucher', qrAlt: 'Claim code QR',
     voucherNote: 'Show this voucher to staff for redemption',
+
+    collectPlusOne: 'Booth collected +1',
+    collectComplete: 'All booths collected — the reward is ready to claim',
 
     staffLogin: 'Staff Login', enterName: 'Enter your name', login: 'Log in',
     invalidLink: 'Invalid link, please contact the administrator',
