@@ -240,8 +240,12 @@ const EVENT_EN = {
 
 const ANNOUNCEMENT_EN = {
   'ann-1': {
-    title: 'Welcome to the Clubs Fair!',
-    content: 'Visit the Student Association Supply Station on the first floor of the Student Activity Centre to learn how the event works and collect your materials. Complete booth activities to earn prizes, and do not miss the live stage performances!',
+    title: 'Game Overview',
+    content: 'Get ready for the Clubs Fair! Explore virtually and join the fun in person!\n\n' +
+      'Online Gameplay\n' +
+      'Browse information for 20 or more booths on the map to unlock the「Know-It-All」badge. Redeem it at the Student Associations Union booth for a pack of nostalgic childhood snacks or a free drink!\n\n' +
+      'On-site Gameplay\n' +
+      'Start by visiting the Student Associations Union booth to grab your Stamp Collection Booklet and a limited-edition fan gift. Then, hunt down club booths and collect stamps by completing their tasks. Every 8 stamps for a lucky draw chance at the Student Associations Union booth!',
   },
 };
 
