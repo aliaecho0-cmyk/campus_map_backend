@@ -14,20 +14,7 @@ import { RecordPlayer } from '../components/record-player.js';
 import { startViewSession } from '../services/boothView.js';
 import * as tut from './map/tutorial-steps.js';
 import { refresh } from '../router.js';
-import { categoryText, isEnglish, localizeAnnouncement, localizeBooth, setLanguage, statusText, t } from '../i18n.js';
-
-const CAT_KEY_MAP = {
-  实践体验类: 'tech',
-  学术科技类: 'academic',
-  体育运动类: 'sport',
-  文化艺术类: 'art',
-  学生组织: 'volunteer',
-  'Practical Experience Clubs': 'tech',
-  'Academic & Science-Technology Clubs': 'academic',
-  'Sports Clubs': 'sport',
-  'Culture & Art Clubs': 'art',
-  'Student Organizations': 'volunteer',
-};
+import { isEnglish, localizeAnnouncement, localizeBooth, setLanguage, statusText, t } from '../i18n.js';
 
 /** 聚焦某个摊位时的缩放：约 6 格可见 */
 const FOCUS_SCALE = 1.9;
@@ -78,18 +65,17 @@ class MapPage {
           <div class="record-player-slot"></div>
           <div class="club-callout" id="clubCallout" style="display:none">
             <div class="cc-close">×</div>
-            <div class="cc-head"><span class="cc-name"></span><span class="cc-badge"></span></div>
+            <div class="cc-head"><span class="cc-name"></span></div>
             <div class="cc-sub"></div>
             <div class="cc-developer-credit" aria-hidden="true">Developers of this page</div>
-            <div class="cc-section"><span class="cc-label">${t('clubIntro')}</span><span class="cc-text cc-intro"></span></div>
+            <div class="cc-section"><span class="cc-label">${t('boothIntro')}</span><span class="cc-text cc-intro"></span></div>
             <div class="cc-section cc-email-section">
-              <span class="cc-label">${t('clubEmail')}</span>
+              <span class="cc-label">${t('boothEmail')}</span>
               <div class="cc-email-wrap">
                 <a class="cc-text cc-email"></a>
                 <button class="cc-email-copy" type="button" hidden>${t('copyEmail')}</button>
               </div>
             </div>
-            <div class="cc-section"><span class="cc-label">${t('gameRules')}</span><span class="cc-text cc-rules"></span></div>
             <div class="cc-actions"><div class="cc-btn primary">${t('viewDetails')}</div></div>
           </div>
         </div>
@@ -383,9 +369,6 @@ class MapPage {
 
   showCallout(booth, x, y) {
     this.callout.querySelector('.cc-name').textContent = booth.clubName;
-    const badge = this.callout.querySelector('.cc-badge');
-    badge.textContent = categoryText(booth.category);
-    badge.className = 'cc-badge cat-' + (CAT_KEY_MAP[booth.category] || 'default');
     this.callout.querySelector('.cc-sub').textContent =
       t('boothStatus', { id: booth.id, status: statusText(booth.status) });
     const developerCredit = this.callout.querySelector('.cc-developer-credit');
@@ -407,7 +390,6 @@ class MapPage {
     clearTimeout(this._emailCopyHideTimer);
     this.emailCopyAction.hidden = true;
     this.emailCopyAction.textContent = t('copyEmail');
-    this.callout.querySelector('.cc-rules').textContent = booth.gameRules || t('notProvided');
     this.callout.style.display = '';
     this.callout.scrollTop = 0;
 

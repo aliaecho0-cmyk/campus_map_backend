@@ -515,32 +515,6 @@
   color: var(--text-color-primary);
   line-height: 1.2;
 }
-.cc-badge {
-  flex-shrink: 0;
-  margin-left: 6px;
-  font-size: 12px;
-  font-family: var(--font-px);
-  color: #fff;
-  padding: 1.5px 6px;
-  border-radius: 0;
-  background: var(--pal-deep);
-}
-.cc-badge.cat-academic {
-  background: var(--cat-academic);
-}
-.cc-badge.cat-art {
-  background: var(--cat-art);
-}
-.cc-badge.cat-sport {
-  background: var(--cat-sport);
-  color: var(--px-sport-ink);
-}
-.cc-badge.cat-tech {
-  background: var(--cat-tech);
-}
-.cc-badge.cat-volunteer {
-  background: var(--cat-volunteer);
-}
 .cc-sub {
   font-size: 10.5px;
   color: var(--text-color-secondary);
