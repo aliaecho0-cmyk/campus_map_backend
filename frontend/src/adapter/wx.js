@@ -130,6 +130,8 @@ function navigateBack() {
 }
 function setNavigationBarTitle({ title }) {
   document.title = title;
+  const headerTitle = document.querySelector('#header .header-title');
+  if (headerTitle) headerTitle.textContent = title;
 }
 
 /* ---------- 剪贴板 ---------- */

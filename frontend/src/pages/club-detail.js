@@ -37,6 +37,10 @@ class ClubDetailPage {
       this.el.innerHTML = `<div class="page club-detail-page"><div class="empty">${t('clubMissing')}</div></div>`;
       return;
     }
+    const isStudentOrganization = sourceClub.category === '学生组织';
+    wx.setNavigationBarTitle({
+      title: t(isStudentOrganization ? 'studentOrganizationDetails' : 'clubDetails'),
+    });
     const club = { ...localizeClub(sourceClub), booth: sourceClub.booth ? localizeBooth(sourceClub.booth) : null };
     const boothId = club.boothId || (club.booth && club.booth.id) || '';
     this._boothId = String(boothId);
@@ -63,14 +67,14 @@ class ClubDetailPage {
         </div>
 
         <div class="card">
-          <div class="section-title">${t('clubProfile')}</div>
+            <div class="section-title">${t(isStudentOrganization ? 'studentOrganizationProfile' : 'clubProfile')}</div>
           <div class="intro-text">${escapeHtml(intro)}</div>
-          <div class="email-block">
+          ${isStudentOrganization ? '' : `<div class="email-block">
             <div class="section-title rules-title">${t('clubEmail')}</div>
             ${email
               ? `<a class="email-text" href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a>`
               : `<div class="email-text is-missing">${t('notProvided')}</div>`}
-          </div>
+          </div>`}
           <div class="rules-block"><div class="section-title rules-title">${t('gameRules')}</div><div class="intro-text">${escapeHtml(rules || t('notProvided'))}</div></div>
         </div>
 

@@ -80,7 +80,7 @@ class MapPage {
             <div class="cc-sub"></div>
             <div class="cc-developer-credit" aria-hidden="true">Developers of this page</div>
             <div class="cc-section"><span class="cc-label">${t('clubIntro')}</span><span class="cc-text cc-intro"></span></div>
-            <div class="cc-section">
+            <div class="cc-section cc-email-section">
               <span class="cc-label">${t('clubEmail')}</span>
               <div class="cc-email-wrap">
                 <a class="cc-text cc-email"></a>
@@ -392,6 +392,8 @@ class MapPage {
       developerCredit.classList.add('is-active');
     }
     this.callout.querySelector('.cc-intro').textContent = booth.intro || '';
+    const isStudentOrganization = booth.category === '学生组织' || booth.category === 'Student Organizations';
+    this.callout.querySelector('.cc-email-section').hidden = isStudentOrganization;
     const emailLink = this.callout.querySelector('.cc-email');
     emailLink.textContent = booth.email || t('notProvided');
     emailLink.classList.toggle('is-missing', !booth.email);

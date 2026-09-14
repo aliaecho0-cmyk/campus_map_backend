@@ -11,7 +11,6 @@ import { localizeEvent, t } from '../i18n.js';
 const FILTERS = [
   { code: '', label: 'all' },
   { code: 'stage_show', label: 'stage' },
-  { code: 'npc', label: 'hiddenQuest' },
   { code: 'reward', label: 'prizePoint' },
 ];
 

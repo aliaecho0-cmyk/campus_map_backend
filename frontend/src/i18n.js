@@ -4,7 +4,7 @@ let language = 'zh';
 const UI = {
   zh: {
     appTitle: '百团大战 · 活动导览',
-    map: '地图', clubs: '社团', events: '活动',
+    map: '地图', clubs: '社团/组织', events: '活动',
     searchClubs: '搜索社团', searchClubNames: '搜索社团名称', search: '搜索',
     clubBooths: '社团摊位', lawnPlaza: '草坪 / 广场', stonePath: '石板路',
     clubIntro: '社团介绍', clubEmail: '社团邮箱', gameRules: '游戏规则', viewDetails: '查看详情',
@@ -16,7 +16,7 @@ const UI = {
     open: '营业中', break: '休息中', closed: '已收摊',
     totalClubs: '共 {count} 个摊位', viewOnMap: '在地图查看',
     noClubs: '暂无社团，换个分类或关键词试试', noDescription: '暂无简介',
-    clubDetails: '社团详情', clubProfile: '社团简介', boothLocation: '摊位位置',
+    clubDetails: '社团详情', studentOrganizationDetails: '学生组织详情', clubProfile: '社团简介', studentOrganizationProfile: '学生组织简介', boothLocation: '摊位位置',
     boothNumber: '摊位号 {id}', mapView: '地图查看', clubMissing: '社团不存在',
     loading: '加载中', stage: '舞台', hiddenQuest: '隐藏任务', prizePoint: '兑奖点',
     npc: 'NPC', prize: '兑奖', allDay: '全天', goThere: '去现场', noEvents: '暂无活动',
@@ -68,7 +68,7 @@ const UI = {
   },
   en: {
     appTitle: 'Clubs Fair · Event Guide',
-    map: 'Map', clubs: 'Clubs', events: 'Events',
+    map: 'Map', clubs: 'Clubs/Orgs', events: 'Events',
     searchClubs: 'Search clubs', searchClubNames: 'Search club names', search: 'Search',
     clubBooths: 'Club Booths', lawnPlaza: 'Lawn / Plaza', stonePath: 'Stone Path',
     clubIntro: 'Club Profile', clubEmail: 'Club Email', gameRules: 'Activity Rules', viewDetails: 'View Details',
@@ -80,7 +80,7 @@ const UI = {
     open: 'Open', break: 'On Break', closed: 'Closed',
     totalClubs: '{count} booths', viewOnMap: 'View on Map',
     noClubs: 'No clubs found. Try another category or keyword.', noDescription: 'No description available.',
-    clubDetails: 'Club Details', clubProfile: 'Club Profile', boothLocation: 'Booth Location',
+    clubDetails: 'Club Details', studentOrganizationDetails: 'Student Organization Details', clubProfile: 'Club Profile', studentOrganizationProfile: 'Student Organization Profile', boothLocation: 'Booth Location',
     boothNumber: 'Booth {id}', mapView: 'View on Map', clubMissing: 'Club not found',
     loading: 'Loading', stage: 'Stage', hiddenQuest: 'Hidden Quest', prizePoint: 'Prize Point',
     npc: 'NPC', prize: 'Prize', allDay: 'All Day', goThere: 'Go There', noEvents: 'No events',
@@ -231,7 +231,6 @@ const EVENT_EN = {
   'evt-stage-5': { title: 'Music Union Performance', location: 'Sunken Plaza Stage', desc: 'Music Union lights up the stage with a live vocal performance.' },
   'evt-stage-6': { title: 'HIPHOP Music Club Performance', location: 'Sunken Plaza Stage', desc: 'HIPHOP Music Club performs a live song medley.' },
   'evt-stage-7': { title: 'Max Dancing Club Open Dance', location: 'Sunken Plaza Stage', desc: 'Join Max Dancing Club for a free-form interactive dance session.' },
-  'evt-npc': { title: 'Hidden Quest: Find the NPC', location: 'Roaming among the booths', desc: 'Find the roaming NPC, complete the mission, and claim a special prize.' },
   'evt-reward': {
     title: 'Student Association Redemption',
     location: 'Student Association Booth',
