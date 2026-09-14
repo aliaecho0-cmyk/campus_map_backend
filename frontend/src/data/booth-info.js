@@ -29,7 +29,7 @@ export const BOOTH_INFO = {
     "gameRulesEn": "Millennium Scene Recreation; Tea Trivia"
   },
   "模拟联合国协会": {
-    "nameEn": "The Model United Nations of CUHKSZ(MUN)",
+    "nameEn": "The Model United Nations of CUHKSZ (MUN)",
     "intro": "香港中文大学（深圳）模拟联合国协会是由关注国际事务的学子发起，经学校备案、获学生事务处OSA支持的非营利学生社团，以“模拟国际舞台，培养领袖风范”为使命，打造国际事务交流与素养提升平台。",
     "introEn": "The Model United Nations of CUHKSZ(MUN), an OSA-backed non-profit club for global affairs students, simulates international stages to foster leadership.",
     "email": "mun@link.cuhk.edu.cn",
@@ -82,7 +82,7 @@ export const BOOTH_INFO = {
     "introEn": "A student organization under Admissions Office",
     "email": "",
     "gameRules": "问答挑战",
-    "gameRulesEn": "Q&A challenge"
+    "gameRulesEn": "Q&A Challenge"
   },
   "金融工程学会": {
     "nameEn": "Finance Engineering Club",
@@ -90,7 +90,7 @@ export const BOOTH_INFO = {
     "introEn": "A student organization under the School of Data Science (SDS)",
     "email": "",
     "gameRules": "掷骰子回答趣味小问题赢奖品",
-    "gameRulesEn": "Roll the dice and answer questions to win prizes"
+    "gameRulesEn": "Roll the Dice and Answer Questions to Win Prizes"
   },
   "英辩队": {
     "nameEn": "English Debate Team",
@@ -106,7 +106,7 @@ export const BOOTH_INFO = {
     "introEn": "A student organization under Office of Student Affairs (OSA)",
     "email": "",
     "gameRules": "知识问答",
-    "gameRulesEn": "Related quiz game"
+    "gameRulesEn": "Related Quiz Game"
   },
   "国际学生协会": {
     "nameEn": "International Students' Association",
@@ -269,7 +269,7 @@ export const BOOTH_INFO = {
     "gameRulesEn": "Millennium Style Showcase; \"Anything Is Possible\" Board"
   },
   "PIC摄影社": {
-    "nameEn": "P.I.C. Photography Association（P.I.C.)",
+    "nameEn": "P.I.C. Photography Association (P.I.C.)",
     "intro": "P.I.C摄影社创立于2015年，是各类摄影师的聚集地。本社团组织策划各种与摄影有关的活动，例如摄影大赛、校拍、校园摄影文创制作等，旨在宣传校园摄影文化，让更多师生爱上摄影。",
     "introEn": "Founded in 2015, PIC Photography Association gathers photography lovers. It holds contests, campus shoots and photo creative projects to spread campus photography culture.",
     "email": "pic@link.cuhk.edu.cn",
@@ -302,8 +302,8 @@ export const BOOTH_INFO = {
   },
   "桥牌社": {
     "nameEn": "Bridge Club",
-    "intro": "匹克球社团由运动爱好者发起，旨在为全校同学搭建交流切磋的平台，普及匹克球相关知识，组织日常练习与趣味赛事，让社员享受运动乐趣、强健体魄。",
-    "introEn": "Initiated by pickleball enthusiasts, the club builds a platform for all students to communicate and compete. It popularizes pickleball‑related knowledge, arranges daily training and fun events, enabling members to enjoy sports and build fitness.",
+    "intro": "桥牌社由桥牌运动爱好者组成。社团服务于全校师生，旨在推广桥牌运动，普及桥牌知识。社团定期开展有关桥牌的教学，日常交流与竞赛活动。为全校师生提供学习，社交和竞技的平台。",
+    "introEn": "CUHK(SZ) Bridge Club is run by bridge enthusiasts and is open to all students and faculty. It aims to promote the game of bridge. The club organizes bridge workshops, social activities and competitions, providing a platform for members to learn, connect and play.",
     "email": "124030058@link.cuhk.edu.cn",
     "gameRules": "赢墩桥牌教学、桥牌知识问答及解题",
     "gameRulesEn": "Bridge Tutorial; Bridge Trivia"
@@ -325,7 +325,7 @@ export const BOOTH_INFO = {
     "gameRulesEn": "One-Minute Cantonese; Cantonese Song Guess"
   },
   "鹿鸣配音社": {
-    "nameEn": "The Voice of Deer Dubbing Club(VDDC)",
+    "nameEn": "The Voice of Deer Dubbing Club (VDDC)",
     "intro": "鹿鸣配音社，热爱广播剧配音者的专属交流平台！我们主打广播剧配音，辅以翻唱、声音剧等多元玩法，带你抛开视觉束缚，纯粹聚焦声音魅力。加入我们，在丰富的活动中玩转配音，一起用声音演绎万千世界！",
     "introEn": "The Voice of Deer Dubbing Club celebrates the pure magic of voice! Join us to explore audio dramas and covers, unleash your vocal talents, and bring countless worlds to life!",
     "email": "st_thevoiceofdeer@link.cuhk.edu.cn",
@@ -341,7 +341,7 @@ export const BOOTH_INFO = {
     "gameRulesEn": "Underwater Garden"
   },
   "新能源学会": {
-    "nameEn": "New Energy Assosiation",
+    "nameEn": "New Energy Association",
     "intro": "理工学院下属的学生组织",
     "introEn": "A student organization under School of Science and Engineering\n\n(SSE).",
     "email": "",
@@ -359,7 +359,7 @@ export const BOOTH_INFO = {
   "IEA投资启蒙协会": {
     "nameEn": "Investment Enlightenment Association",
     "intro": "数据科学学院金融工程研究生院下属的学生组织",
-    "introEn": "A student organization under School of Science and Engineering\n\n(SSE).",
+    "introEn": "A student organization under the School of Data Science (SDS).",
     "email": "",
     "gameRules": "次元同框欢乐剧场、Future Investor筹码博弈局、欧气抽奖屋、折扣寻宝赛",
     "gameRulesEn": "Cross‑Dimension Fun Theater、Future Investor · Chip Showdown、Lucky Draw Hub、Discount Treasure Hunt"
@@ -418,7 +418,7 @@ export const BOOTH_INFO = {
     "introEn": "A student organization under the Student Health and Counselling Center (SHCC)",
     "email": "",
     "gameRules": "“你以为vs事实”转盘问答、X立板留言",
-    "gameRulesEn": "\"MYTH vs FACT\"wheel quiz, X‑vertical plate message"
+    "gameRulesEn": "\"MYTH VS FACT\" Wheel Quiz, X‑Vertical Plate Message"
   },
   "奇点科幻社": {
     "nameEn": "Singularity Science Fiction",
@@ -528,7 +528,7 @@ export const BOOTH_INFO = {
     "nameEn": "Basketball Club",
     "intro": "LGUBA篮球社面向校内所有篮球爱好者，汇聚每一份对篮球的热爱。我们以球会友，在日常球局和书院联赛中一起锤炼球技，凝聚团队，共同在赛场释放青春热血，收获并肩作战的友谊。",
     "introEn": "LGUBA Basketball Club welcomes all basketball enthusiasts on campus, uniting every passion for the game. We build friendships through the sport, honing our skills together in casual games and inter-house leagues, strengthening teamwork, and unleashing youthful energy on the court—creating lasting bonds forged through shared victories and challenges.",
-    "email": "",
+    "email": "123090640@link.cuhk.edu.cn",
     "gameRules": "篮球知识问答和投篮挑战赛",
     "gameRulesEn": "Basketball Trivia; Shooting Challenge"
   },
@@ -645,7 +645,7 @@ export const BOOTH_INFO = {
     "gameRulesEn": "Impromptu Speech; Nonsense PPT Challenge"
   },
   "自说自话脱口秀社": {
-    "nameEn": "SOMIC Stand-up Comedy Club",
+    "nameEn": "SOMIC Stand-Up Comedy Club",
     "intro": "自说自话脱口秀社（SOMIC），一人一麦，传递纯粹快乐！我们定期举办校园开放麦，鼓励素人登台；开设专业训练营，零基础也能玩转脱口秀；更有联合深圳厂牌办商演、办放映会。加入我们，了解并爱上脱口秀，一起释放幽默！",
     "introEn": "SOMIC Stand-up Comedy Club delivers pure joy with open mics, pro training, and epic Shenzhen shows! Join us to unleash your humor, embrace the mic, and fall in love with comedy!",
     "email": "st_somic@link.cuhk.edu.cn",
@@ -706,6 +706,6 @@ export const BOOTH_INFO = {
     "introEn": "A student organization under Graduate School",
     "email": "",
     "gameRules": "投壶，筷子夹乒乓球，旱地冰壶",
-    "gameRulesEn": "Jousting, Using chopsticks to pick up table tennis balls, Dry land curling"
+    "gameRulesEn": "Jousting, Using Chopsticks to Pick Up Table Tennis Balls, Dry Land Curling"
   }
 };

@@ -215,7 +215,7 @@ const CLUB_NAMES_EN = {
   '手极社': 'Hand Extreme Sports Club',
   '精舞团': 'Max Dancing Club',
   'TEDxCUHKSZ': 'TEDxCUHKSZ',
-  '自说自话脱口秀社': 'SOMIC Stand-up Comedy Club',
+  '自说自话脱口秀社': 'SOMIC Stand-Up Comedy Club',
   '南露书法社': 'Nanlu Calligraphy Club',
   '数独社': 'Sudoku Club',
   '电影俱乐部': 'Film Club',

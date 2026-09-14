@@ -181,9 +181,9 @@ const LATEST_BOOTH_PLAN = [
   [9, '经管头马演讲俱乐部', 1, 14],
   [10, '学生大使团', 1, 15],
   [11, '金融工程学会', 1, 16],
-  [12, '英辩队', 1, 17],
+  [12, '英文辩论队', 1, 17],
   [13, '国旗护卫队', 1, 18],
-  [14, '国际学生协会', 1, 19],
+  [14, 'ISA国际学生协会', 1, 19],
   [15, '台球社', 4, 4],
   [16, 'Encore音乐剧社', 4, 5],
   [17, '唯在设计', 4, 6],
@@ -194,8 +194,8 @@ const LATEST_BOOTH_PLAN = [
   [22, '城市特派队', 3, 14],
   [23, '知津公益剧社', 3, 15],
   [24, '微光公益', 3, 18],
-  [25, 'SPC主摊位', 3, 19],
-  [26, 'uBuddies', 0, 25],
+  [25, '社会实践中心', 3, 19],
+  [26, '朋辈心理辅导', 0, 25],
   [27, '青年会', 1, 25],
   [28, '电音社', 2, 25],
   [29, '2Tired骑行社', 3, 25],
@@ -221,7 +221,7 @@ const LATEST_BOOTH_PLAN = [
   [49, '生物科学学会', 19, 21],
   [50, '武联社', 19, 18],
   [51, '逸夫青年研习社', 19, 17],
-  [52, 'Respecx 青春健康同伴社', 19, 16],
+  [52, '青春健康同伴社', 19, 16],
   [53, '奇点科幻社', 19, 15],
   [54, '魅影戏剧社', 19, 14],
   [55, '乒乓球社', 16, 20],
@@ -265,6 +265,11 @@ const PLAN_NAME_ALIASES = {
   'IEA投资启蒙协会': 'IEA',
   '生物科学学会': 'DeepBio生物科学学会',
   'CP 食研社': 'CP食研社',
+  '英文辩论队': '英辩队',
+  'ISA国际学生协会': '国际学生协会',
+  '社会实践中心': 'SPC主摊位',
+  '朋辈心理辅导': 'uBuddies',
+  '青春健康同伴社': 'Respecx 青春健康同伴社',
 };
 
 /** 分类以《摊位信息（中英文）.xlsx》工作表1的连续分组为准。 */
@@ -287,11 +292,11 @@ const BOOTH_CATEGORY_GROUPS = {
     '自说自话脱口秀社', '涤纶诗社', '戏曲社', '掬月社', '润泽书社', 'Encore音乐剧社', 'HIPHOP音乐社',
   ],
   学生组织: [
-    'SPC主摊位', '微光公益', '知津公益剧社', '城市特派队', '分类大师', '国际学生协会',
-    '国旗护卫队', '英辩队', '金融工程学会', '学生大使团', '化学协会', '新能源学会',
+    '社会实践中心', '微光公益', '知津公益剧社', '城市特派队', '分类大师', 'ISA国际学生协会',
+    '国旗护卫队', '英文辩论队', '金融工程学会', '学生大使团', '化学协会', '新能源学会',
     '游戏研究社', '物理学会', '计算机协会', 'IEA投资启蒙协会', '经管头马演讲俱乐部',
-    '逸夫青年研习社', '青年会', 'uBuddies', '生物科学学会', 'TIDE Club',
-    'Respecx 青春健康同伴社', '研究生会',
+    '逸夫青年研习社', '青年会', '朋辈心理辅导', '生物科学学会', 'TIDE Club',
+    '青春健康同伴社', '研究生会',
   ],
 };
 
@@ -302,8 +307,9 @@ const boothCategoryByName = new Map(
 
 const clubDataByName = new Map(CLUB_DATA.map((club) => [club.name, club]));
 const latestClubData = LATEST_BOOTH_PLAN.map(([num, name, x, y]) => {
-  const source = clubDataByName.get(PLAN_NAME_ALIASES[name] || name);
-  const latestInfo = BOOTH_INFO[name] || {};
+  const sourceName = PLAN_NAME_ALIASES[name] || name;
+  const source = clubDataByName.get(sourceName);
+  const latestInfo = BOOTH_INFO[sourceName] || {};
   const category = boothCategoryByName.get(name);
   if (source) return { ...source, ...latestInfo, num, name, x, y, category: category || source.category };
   return {
