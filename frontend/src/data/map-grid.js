@@ -61,7 +61,7 @@ const LABELS = [
   { x: 9.5, y: 16.3, text: '草坪' },
   { x: 25, y: 16.5, text: '草坪' },
   { x: 12, y: 20.35, text: '社联摊位' },
-  { x: 20.5, y: 26.5, text: '一鸥茶' },
+  { x: 20.5, y: 26.5, text: '一瓯茶' },
 ].map((label) => ({ ...label, size: 0.5, fill: '#594661' }));
 
 function inGrid(x, y) {

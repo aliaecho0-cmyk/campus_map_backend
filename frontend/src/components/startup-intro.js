@@ -1,5 +1,9 @@
 import consoleSrc from '../../地图相关素材/游戏机模板.jpg';
-import mapPreviewSrc from '../../地图相关素材/地图参考模板.jpg';
+import mapZhPreview from '../../地图相关素材/地图参考模板.jpg';
+import mapEnPreview from '../../地图相关素材/地图参考模板2.jpg';
+import { isEnglish } from '../i18n.js';
+
+const mapPreviewSrc = () => (isEnglish() ? mapEnPreview : mapZhPreview);
 
 const SCREEN = {
   left: 17.5,
@@ -34,7 +38,7 @@ export function mountStartupIntro() {
             <div class="startup-intro__preview-head">
               <span>百团大战</span><i></i>
             </div>
-            <img class="startup-intro__map" src="${mapPreviewSrc}" alt="" />
+            <img class="startup-intro__map" src="${mapPreviewSrc()}" alt="" />
             <div class="startup-intro__preview-nav">
               <span>首页</span><span class="is-current">地图</span><span>社团</span>
             </div>

@@ -70,10 +70,10 @@ class MapPage {
             <div class="legend-item"><span class="dot activity"></span>${t('stonePath')}</div>
           </div>
           <div class="tutorial-replay-slot">
+            <button class="lang-toggle" type="button" aria-label="${t('langSwitch')}" title="${t('langSwitch')}"></button>
             <button class="tutorial-replay" type="button" aria-label="${t('replayTutorial')}" title="${t('replayTutorial')}">
               <span aria-hidden="true">?</span>
             </button>
-            <button class="lang-toggle" type="button" aria-label="${t('langSwitch')}" title="${t('langSwitch')}"></button>
           </div>
           <div class="record-player-slot"></div>
           <div class="club-callout" id="clubCallout" style="display:none">

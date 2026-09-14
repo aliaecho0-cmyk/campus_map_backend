@@ -230,7 +230,7 @@
 
 /* ---------- 地图容器 ---------- */
 .map-wrap {
-  --map-control-size: 38px;
+  --map-control-size: 10px;
   position: relative;
   flex: 1;
   min-height: 0;
@@ -256,7 +256,7 @@
   width: var(--map-control-size);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 .tutorial-replay {
   position: relative;
@@ -264,33 +264,32 @@
   place-items: center;
   width: 100%;
   height: var(--map-control-size);
-  padding: 0 0 3px;
+  padding: 0 0 1px;
   border: var(--px-border-w) solid var(--px-border);
   background: var(--pal-deep);
   color: #fff;
   cursor: pointer;
-  clip-path: polygon(4px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px), 0 4px);
-  box-shadow: inset 3px 3px 0 rgba(255, 255, 255, 0.24), inset -3px -4px 0 #7140aa;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.24), inset -1px -2px 0 #7140aa;
   filter: drop-shadow(2px 2px 0 rgba(24, 12, 40, 0.72));
   -webkit-tap-highlight-color: transparent;
 }
 .tutorial-replay::after {
   content: '';
   position: absolute;
-  left: 5px;
-  right: 5px;
-  bottom: 4px;
-  height: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 1px;
+  height: 1px;
   background: #5b318d;
   pointer-events: none;
 }
 .tutorial-replay span {
   position: relative;
   z-index: 1;
-  font-size: 25px;
+  font-size: 15px;
   font-weight: 800;
   line-height: 1;
-  text-shadow: 2px 2px 0 #5b318d;
+  text-shadow: 1px 1px 0 #5b318d;
 }
 .tutorial-replay:focus-visible {
   outline: 2px solid #fff0cf;
@@ -306,7 +305,7 @@
   place-items: center;
   width: 100%;
   height: var(--map-control-size);
-  padding: 0 0 2px;
+  padding: 0 0 1px;
   border: var(--px-border-w) solid var(--px-border);
   background: var(--pal-deep);
   color: #fff0cf;
@@ -314,8 +313,7 @@
   font-weight: 800;
   line-height: 1;
   cursor: pointer;
-  clip-path: polygon(4px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px), 0 4px);
-  box-shadow: inset 3px 3px 0 rgba(255, 255, 255, 0.24), inset -3px -4px 0 #433343;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.24), inset -1px -2px 0 #433343;
   filter: drop-shadow(2px 2px 0 rgba(24, 12, 40, 0.72));
   -webkit-tap-highlight-color: transparent;
 }

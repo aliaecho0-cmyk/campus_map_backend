@@ -12,6 +12,7 @@ import * as canvasMap from '../utils/canvas-map.js';
 import SVG_BASE_FALLBACK from './historical-map-svg.js';
 import renderSVG from './svg-canvas-renderer.js';
 import { createMapPainter, MAP_IMAGE_WIDTH, MAP_IMAGE_HEIGHT } from './map-painter.js';
+import { isEnglish } from '../i18n.js';
 import booth8HighlightSrc from '../../地图相关素材/按钮8.png';
 import npcUpLeftSrc from '../../人物素材/透明背景/up_left_foot_forward.png';
 import npcUpRightSrc from '../../人物素材/透明背景/up_right_foot_forward.png';
@@ -288,7 +289,7 @@ export class CustomMap {
   _refreshFont() {
     const fonts = document.fonts;
     if (!fonts || typeof fonts.load !== 'function') return;
-    fonts.load('18px "px-cjk"', '0123456789社联摊位一鸥茶草坪图书馆').then(
+    fonts.load('18px "px-cjk"', '0123456789社联摊位一瓯茶草坪图书馆').then(
       () => {
         this._drawAll();
       },
@@ -686,9 +687,20 @@ export class CustomMap {
     ctx.restore();
   }
 
-  /** 覆盖参考图中的旧茶店名，保持原木牌造型。 */
+  /** 覆盖参考图中的旧茶店名，保持原木牌造型；
+ *  中文画整块木牌+一瓯茶盖住旧字；英文底图已含招牌板，只叠文字。 */
   _drawTeaShopLabel(ctx) {
+    const en = isEnglish();
     ctx.save();
+    if (en) {
+      ctx.fillStyle = '#49314f';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('A Cup of Tea', 744, 968);
+      ctx.restore();
+      return;
+    }
     ctx.fillStyle = '#f1c8ad';
     ctx.fillRect(708, 954, 72, 25);
     ctx.fillStyle = '#fff0cf';
@@ -702,7 +714,7 @@ export class CustomMap {
     ctx.font = '16px "px-cjk", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('一鸥茶', 744, 968);
+    ctx.fillText('一瓯茶', 744, 968);
     ctx.restore();
   }
 
