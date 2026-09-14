@@ -100,6 +100,7 @@ class MapPage {
     this.map = new CustomMap(container.querySelector('.custom-map'), {
       onBoothTap: (d) => this.onBoothTap(d),
       onBoothCancel: () => this.onBoothCancel(),
+      onUnionTap: (d) => this.onUnionTap(d),
     });
 
     // 事件绑定
@@ -367,7 +368,23 @@ class MapPage {
     this._startViewSession(d.id);
   }
 
-  showCallout(booth, x, y) {
+  /* 点击地图「社联摊位 / SAUD」招牌 → 弹出同款介绍框，内容为 Game Overview */
+  onUnionTap(d) {
+    const en = isEnglish();
+    const union = {
+      id: 'SAUD',
+      clubName: en ? 'SAUD' : '社联摊位',
+      category: '学生组织', // 组织视作无邮箱
+      status: 'open',
+      intro: t('gameOverview'),
+      email: '',
+      clubId: '',
+      targetEventId: 'evt-reward', // 「查看详情」→ 活动页「社联兑奖」详情
+    };
+    this.showCallout(union, d.x, d.y, { union: true });
+  }
+
+  showCallout(booth, x, y, opts = {}) {
     this.callout.querySelector('.cc-name').textContent = booth.clubName;
     this.callout.querySelector('.cc-sub').textContent =
       t('boothStatus', { id: booth.id, status: statusText(booth.status) });
@@ -390,6 +407,7 @@ class MapPage {
     clearTimeout(this._emailCopyHideTimer);
     this.emailCopyAction.hidden = true;
     this.emailCopyAction.textContent = t('copyEmail');
+    this.callout.querySelector('.cc-sub').hidden = !!opts.union;
     this.callout.style.display = '';
     this.callout.scrollTop = 0;
 
@@ -438,8 +456,12 @@ class MapPage {
   onCalloutDetail() {
     this._cancelViewSession();
     this.callout.style.display = 'none';
-    if (this._currentBooth) {
-      wx.navigateTo({ url: `#/club-detail?clubId=${this._currentBooth.clubId}` });
+    const b = this._currentBooth;
+    if (!b) return;
+    if (b.targetEventId) {
+      wx.navigateTo({ url: `#/event-detail?id=${b.targetEventId}` });
+    } else if (b.clubId) {
+      wx.navigateTo({ url: `#/club-detail?clubId=${b.clubId}` });
     }
   }
 

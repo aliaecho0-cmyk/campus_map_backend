@@ -77,11 +77,12 @@ function parseSvgViewBox(svg) {
 }
 
 export class CustomMap {
-  constructor(root, { onBoothTap, onBoothCancel } = {}) {
+  constructor(root, { onBoothTap, onBoothCancel, onUnionTap } = {}) {
     this.root = root;
     this.canvas = root.querySelector('.map-canvas');
     this._onBoothTap = onBoothTap || (() => {});
     this._onBoothCancel = onBoothCancel || (() => {});
+    this._onUnionTap = onUnionTap || (() => {});
 
     this._booths = [];
     this._highlightedId = '';
@@ -518,7 +519,13 @@ export class CustomMap {
     const mapY = (local.y - vp.y) / vp.scale / canvasMap.CELL_PX;
     const hitId = this._hitTest(mapX, mapY);
     if (!hitId) {
-      this._onBoothCancel();
+      if (this._inUnionRegion(mapX, mapY)) {
+        const sx = mapX * canvasMap.CELL_PX * vp.scale + vp.x;
+        const sy = mapY * canvasMap.CELL_PX * vp.scale + vp.y;
+        this._onUnionTap({ x: sx, y: sy, mapX, mapY });
+      } else {
+        this._onBoothCancel();
+      }
       return;
     }
     const booth = this._booths.find((b) => b.id === hitId);
@@ -540,6 +547,13 @@ export class CustomMap {
       return Math.abs(point.x - px) <= 19 && Math.abs(point.y - py) <= 19;
     });
     return booth ? booth.id : null;
+  }
+
+  /** 是否点在地图「社联摊位 / SAUD」招牌区域（union）内 */
+  _inUnionRegion(mapX, mapY) {
+    const r = canvasMap.UNION_REGION;
+    if (!r) return false;
+    return mapX >= r.x && mapX <= r.x + r.w && mapY >= r.y && mapY <= r.y + r.h;
   }
 
   /* ---------- 视口 ---------- */

@@ -582,6 +582,7 @@
   font-size: 11.5px;
   line-height: 1.5;
   color: var(--text-color-regular);
+  white-space: pre-wrap;
 }
 .cc-email {
   color: var(--pal-deep);
