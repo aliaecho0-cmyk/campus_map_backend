@@ -15,6 +15,7 @@ import { startViewSession } from '../services/boothView.js';
 import * as tut from './map/tutorial-steps.js';
 import { refresh } from '../router.js';
 import { isEnglish, localizeAnnouncement, localizeBooth, setLanguage, statusText, t } from '../i18n.js';
+import { getCurrentBoothStatus } from '../utils/booth-status.js';
 
 /** 聚焦某个摊位时的缩放：约 6 格可见 */
 const FOCUS_SCALE = 1.9;
@@ -375,7 +376,7 @@ class MapPage {
       id: 'SAUD',
       clubName: en ? 'SAUD' : '社联摊位',
       category: '学生组织', // 组织视作无邮箱
-      status: 'open',
+      status: getCurrentBoothStatus(),
       intro: t('gameOverview'),
       email: '',
       clubId: '',
