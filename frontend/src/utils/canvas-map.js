@@ -45,6 +45,8 @@ const DEFAULT_MAP_POS = { x: 10, y: 12, label: '地图中心' };
 
 const PLAZA_REGION = { x: 5, y: 4, w: 10, h: 8 };
 const THANKS_REGION = { x: 3, y: 3, w: 2, h: 1 };
+/* 社联摊位（union 区域，地图上写有「社联摊位 / SAUD」的招牌处） */
+const UNION_REGION = { x: 10.5, y: 19.4, w: 3.2, h: 1.5 };
 
 function errorCircleRadius(accuracy) {
   if (typeof accuracy !== 'number' || accuracy <= 0) return 1;
@@ -113,6 +115,7 @@ export {
   DEFAULT_MAP_POS,
   PLAZA_REGION,
   THANKS_REGION,
+  UNION_REGION,
   latLngToMap,
   mapToLatLng,
   errorCircleRadius,

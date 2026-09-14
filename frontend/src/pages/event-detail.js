@@ -64,8 +64,9 @@ class EventDetailPage {
     } else if (evt.type === 'npc') {
       state.highlightCenter = { resetView: true };
     } else if (evt.type === 'reward') {
-      state.highlightCenter = null;
-      state.highlightBoothId = evt.boothId || '25';
+      // 社联兑奖 → 定位到地图上「社联摊位 / SAUD」招牌处并紫色高亮
+      state.highlightBoothId = '';
+      state.highlightCenter = { union: true };
     } else {
       state.highlightCenter = { mapX: Number(evt.mapX) || 10, mapY: Number(evt.mapY) || 8, plaza: true };
     }

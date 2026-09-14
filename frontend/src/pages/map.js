@@ -521,7 +521,7 @@ class MapPage {
         this.map.setHighlightRegion(null);
         this.map.fitView();
       } else {
-        const region = c.plaza ? canvasMap.PLAZA_REGION : c.thanks ? canvasMap.THANKS_REGION : null;
+        const region = c.plaza ? canvasMap.PLAZA_REGION : c.thanks ? canvasMap.THANKS_REGION : c.union ? canvasMap.UNION_REGION : null;
         if (region) {
           this.map.setHighlightRegion(region);
           this.moveToMapPos(c.mapX != null ? c.mapX : region.x + region.w / 2, c.mapY != null ? c.mapY : region.y + region.h / 2);
