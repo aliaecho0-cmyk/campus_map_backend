@@ -26,7 +26,7 @@ const UI = {
     tutorialHint: '★ 新手提示', tutorialPrevious: '◀ 上一步',
     tutorialNext: '下一步 ▶', startExploring: '开始探索 ▶',
     confirm: '确定', cancel: '取消', loadingEllipsis: '加载中…',
-    pauseRecord: '暂停唱片', resumeRecord: '继续播放唱片', replayTutorial: '重新播放新手教程', notProvided: '未提供',
+    pauseRecord: '暂停唱片', resumeRecord: '继续播放唱片', replayTutorial: '重新播放新手教程', langSwitch: '切换语言', notProvided: '未提供',
     copyEmail: '复制邮箱', emailCopied: '已复制', copyFailed: '复制失败',
 
     reward: '奖励', redeem: '核销',
@@ -90,7 +90,7 @@ const UI = {
     tutorialHint: '★ Rookie Guide', tutorialPrevious: '◀ Previous',
     tutorialNext: 'Next ▶', startExploring: 'Start Exploring ▶',
     confirm: 'Confirm', cancel: 'Cancel', loadingEllipsis: 'Loading…',
-    pauseRecord: 'Pause record', resumeRecord: 'Resume record', replayTutorial: 'Replay rookie guide', notProvided: 'Not provided',
+    pauseRecord: 'Pause record', resumeRecord: 'Resume record', replayTutorial: 'Replay rookie guide', langSwitch: 'Switch language', notProvided: 'Not provided',
     copyEmail: 'Copy email', emailCopied: 'Copied', copyFailed: 'Copy failed',
 
     reward: 'Rewards', redeem: 'Redeem',

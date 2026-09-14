@@ -13,7 +13,8 @@ import { CustomMap } from '../components/custom-map.js';
 import { RecordPlayer } from '../components/record-player.js';
 import { startViewSession } from '../services/boothView.js';
 import * as tut from './map/tutorial-steps.js';
-import { categoryText, localizeAnnouncement, localizeBooth, statusText, t } from '../i18n.js';
+import { refresh } from '../router.js';
+import { categoryText, isEnglish, localizeAnnouncement, localizeBooth, setLanguage, statusText, t } from '../i18n.js';
 
 const CAT_KEY_MAP = {
   实践体验类: 'tech',
@@ -72,6 +73,7 @@ class MapPage {
             <button class="tutorial-replay" type="button" aria-label="${t('replayTutorial')}" title="${t('replayTutorial')}">
               <span aria-hidden="true">?</span>
             </button>
+            <button class="lang-toggle" type="button" aria-label="${t('langSwitch')}" title="${t('langSwitch')}"></button>
           </div>
           <div class="record-player-slot"></div>
           <div class="club-callout" id="clubCallout" style="display:none">
@@ -106,6 +108,7 @@ class MapPage {
       container.querySelector('.map-legend'),
     );
     this.tutorialReplayButton = container.querySelector('.tutorial-replay');
+    this.langToggle = container.querySelector('.lang-toggle');
 
     // 自定义地图
     this.map = new CustomMap(container.querySelector('.custom-map'), {
@@ -121,6 +124,8 @@ class MapPage {
     this.searchClear.addEventListener('click', () => this.onClearKeyword());
     this.searchMask.addEventListener('click', () => this.onSearchMaskTap());
     this.tutorialReplayButton.addEventListener('click', () => this.replayTutorial());
+    this.langToggle.addEventListener('click', () => this.onToggleLanguage());
+    this._updateLangToggle();
     container.querySelector('.cc-close').addEventListener('click', () => this.onCalloutClose());
     container.querySelector('.cc-btn.primary').addEventListener('click', () => this.onCalloutDetail());
     this._bindEmailCopy();
@@ -598,6 +603,18 @@ class MapPage {
   replayTutorial() {
     state.pendingOnboarding = true;
     this.maybeStartTutorial();
+  }
+
+  /* ---------- 中英文切换 ---------- */
+  onToggleLanguage() {
+    setLanguage(isEnglish() ? 'zh' : 'en');
+    refresh();
+  }
+
+  _updateLangToggle() {
+    if (!this.langToggle) return;
+    // 显示“点击后切换到”的目标语言：英文界面显示“中”，中文界面显示“EN”
+    this.langToggle.textContent = isEnglish() ? '中' : 'EN';
   }
 
   maybeStartTutorial() {
