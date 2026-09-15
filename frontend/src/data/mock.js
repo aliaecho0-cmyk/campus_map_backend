@@ -1,5 +1,5 @@
 /**
- * data/mock.js — 社团资料库与最新摊位方案（88 个摊位，2026-09-11）
+ * data/mock.js — 社团资料库与最新摊位方案（90 个摊位，2026-09-15）
  *
  * 坐标系说明（v5 格栅化重做，2026-09-04）：
  * - x / y：格栅坐标（grid 整数 0~29），左上角 (0,0)，向右为 x、向下为 y
@@ -258,6 +258,8 @@ const LATEST_BOOTH_PLAN = [
   [86, '健身社', 7, 1],
   [87, '万寿模型社', 6, 1],
   [88, '研究生会', 1, 13],
+  [89, '药研会', 3, 17],
+  [90, 'MediArt医学协会', 12, 27],
 ];
 
 const PLAN_NAME_ALIASES = {
@@ -296,7 +298,7 @@ const BOOTH_CATEGORY_GROUPS = {
     '国旗护卫队', '英文辩论队', '金融工程学会', '学生大使团', '化学协会', '新能源学会',
     '游戏研究社', '物理学会', '计算机协会', 'IEA投资启蒙协会', '经管头马演讲俱乐部',
     '逸夫青年研习社', '青年会', '朋辈心理辅导', '生物科学学会', 'TIDE Club',
-    '青春健康同伴社', '研究生会',
+    '青春健康同伴社', '研究生会', '药研会', 'MediArt医学协会',
   ],
 };
 
@@ -318,8 +320,8 @@ const latestClubData = LATEST_BOOTH_PLAN.map(([num, name, x, y]) => {
     category: category || '学生组织',
     x,
     y,
-    slogan: '研究生事务与校园服务',
-    intro: '研究生会摊位，具体介绍以现场信息为准。',
+    slogan: latestInfo.intro || '学生组织',
+    intro: '学生组织介绍以现场信息为准。',
     gameRules: '现场互动规则请咨询摊位工作人员。',
     ...latestInfo,
   };
@@ -374,8 +376,8 @@ const activities = [
   { id: 'evt-stage-1', type: 'stage_show', title: '凤凰漫研社乐队 表演', clubId: slug('凤凰漫研社'),
     startTime: '2026-09-19 15:00', endTime: '2026-09-19 15:20',
     location: '下沉广场舞台', area: 'D', zone: 'plaza',
-    desc: '凤凰漫研社乐队带来四首风格鲜明的现场曲目。',
-    programs: ['henceforth', '夜明与萤火虫', 'lostone的号哭', '心做し'],
+    desc: '凤凰漫研社乐队带来三首风格鲜明的现场曲目。',
+    programs: ['Lostone的号哭', 'Henceforth', '心做し'],
     mapX: 10, mapY: 8, status: 'open' },
   { id: 'evt-stage-2', type: 'stage_show', title: '精舞团 表演', clubId: slug('精舞团'),
     startTime: '2026-09-19 15:30', endTime: '2026-09-19 16:05',

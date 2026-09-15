@@ -707,5 +707,21 @@ export const BOOTH_INFO = {
     "email": "",
     "gameRules": "投壶，筷子夹乒乓球，旱地冰壶",
     "gameRulesEn": "Jousting, Using Chopsticks to Pick Up Table Tennis Balls, Dry Land Curling"
+  },
+  "药研会": {
+    "nameEn": "PharmAceso",
+    "intro": "医学院下属的学生组织",
+    "introEn": "A student organization under the School of Medicine (MED).",
+    "email": "",
+    "gameRules": "药物配对、药物剂型排序、分子模型游戏",
+    "gameRulesEn": "Drug Matching, Ranking Dosage Formulations, Molecular Model Game"
+  },
+  "MediArt医学协会": {
+    "nameEn": "MediArt Society",
+    "intro": "医学院下属的学生组织",
+    "introEn": "A student organization under the School of Medicine (MED).",
+    "email": "",
+    "gameRules": "医学科普小游戏",
+    "gameRulesEn": "Puzzles about Popular Medical Science"
   }
 };
