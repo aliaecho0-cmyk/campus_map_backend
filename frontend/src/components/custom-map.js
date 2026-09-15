@@ -623,6 +623,7 @@ export class CustomMap {
     this._drawBaseMap(ctx);
     this._coverPrizePointLabel(ctx);
     this._drawTeaShopLabel(ctx);
+    this._drawTeachingBuildingLabel(ctx);
     this._drawBooths(ctx);
     this._drawRegionHighlight(ctx);
     this._drawBoothNumbers(ctx);
@@ -729,6 +730,35 @@ export class CustomMap {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('一瓯茶', 744, 968);
+    ctx.restore();
+  }
+
+  /** 覆盖底图左下角旧 Teaching D 字样，并沿用建筑屋檐的紫色像素铭牌。 */
+  _drawTeachingBuildingLabel(ctx) {
+    const en = isEnglish();
+    const label = en ? 'Zhang Ling Bin Building' : '张灵斌楼';
+    const centerX = 214;
+    const top = 966;
+    const width = en ? 190 : 108;
+
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.fillStyle = '#39284c';
+    ctx.fillRect(centerX - width / 2 + 2, top + 2, width, 24);
+    ctx.fillStyle = '#60358c';
+    ctx.fillRect(centerX - width / 2, top, width, 24);
+    ctx.fillStyle = '#8f58b7';
+    ctx.fillRect(centerX - width / 2 + 3, top + 2, width - 6, 3);
+    ctx.fillStyle = '#4b276f';
+    ctx.fillRect(centerX - width / 2 + 3, top + 20, width - 6, 2);
+
+    ctx.font = `${en ? 14 : 16}px "px-cjk", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#39284c';
+    ctx.fillText(label, centerX + 1, top + 13);
+    ctx.fillStyle = '#fff0cf';
+    ctx.fillText(label, centerX, top + 12);
     ctx.restore();
   }
 
